@@ -62,6 +62,22 @@ def estimate_MI_smile(scores):
 
 # https://neurotycho.brain.riken.jp/download/2012/20100802S1_Epidural-ECoG+Food-Tracking_B_Kentaro+Shimoda_mat_ECoG64-Motion6.zip
 
+
+def prepare_batch(X):
+    # take all samples except the last one as inputs
+    input_data = X[:-1]
+
+    # take all samples except the first one as targets
+    target_data = X[1:]
+
+    # stack them as pairs with dimension (999, 2, 10)
+    pairs = torch.stack((input_data, target_data), dim=1)
+    
+    assert pairs[0,0,0] == input_data[0,0]
+
+    return pairs
+
+
 def prepare_ecog_dataset():
 
 
@@ -104,24 +120,12 @@ def prepare_ecog_dataset():
 
     dataset_tensor = torch.tensor(all_data).T
 
+    dataset_pairs = prepare_batch(dataset_tensor)
     # save as dataset
-    torch.save(dataset_tensor, '/vol/bitbucket/dm2223/info-theory-experiments/data/ecog_data')
+    torch.save(dataset_pairs, '/vol/bitbucket/dm2223/info-theory-experiments/data/ecog_data_pairs.pth')
 
     return None
 
 
 
 
-def prepare_batch(X):
-    # take all samples except the last one as inputs
-    input_data = X[:-1]
-
-    # take all samples except the first one as targets
-    target_data = X[1:]
-
-    # stack them as pairs with dimension (999, 2, 10)
-    pairs = torch.stack((input_data, target_data), dim=1)
-    
-    assert pairs[0,0,0] == input_data[0,0]
-
-    return pairs

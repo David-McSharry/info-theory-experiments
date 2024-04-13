@@ -126,7 +126,7 @@ def smile_lower_bound(f, clip=None):
     return js + dv_js
 
 
-def estimate_mutual_information(estimator, x, y, critic_fn,
+def estimate_mutual_information(estimator, scores,
                                 baseline_fn=None, alpha_logit=None, **kwargs):
     """Estimate variational lower bounds on mutual information.
 
@@ -144,17 +144,11 @@ def estimate_mutual_information(estimator, x, y, critic_fn,
   Returns:
     scalar estimate of mutual information
     """
-    x, y = x.cuda(), y.cuda()
-    scores = critic_fn(x, y)
-    if baseline_fn is not None:
-        # Some baselines' output is (batch_size, 1) which we remove here.
-        log_baseline = torch.squeeze(baseline_fn(y))
+        
     if estimator == 'infonce':
         mi = infonce_lower_bound(scores)
     elif estimator == 'nwj':
         mi = nwj_lower_bound(scores)
-    elif estimator == 'tuba':
-        mi = tuba_lower_bound(scores, log_baseline)
     elif estimator == 'js':
         mi = js_lower_bound(scores)
     elif estimator == 'smile':
