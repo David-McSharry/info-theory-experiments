@@ -3,3 +3,4 @@ data
 wandb
 __MACOSX
 __pycache__
+trained_models

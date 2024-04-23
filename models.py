@@ -1,0 +1,172 @@
+import torch
+import torch.nn as nn
+from smile_estimator import estimate_mutual_information
+# spectral norm
+from torch.nn.utils.spectral_norm import spectral_norm
+# NOTE: spectral norm removed for now
+
+class SupervenientFeatureNetwork(nn.Module):
+    def __init__(
+            self,
+            num_atoms: int,
+            feature_size: int,
+            hidden_sizes: list,
+            include_bias: bool = True
+        ):
+        super(SupervenientFeatureNetwork, self).__init__()
+        layers = []
+        input_size = num_atoms
+        for hidden_size in hidden_sizes:
+            layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            layers.append(nn.ReLU())
+            input_size = hidden_size
+        layers.append(nn.Linear(input_size, feature_size, bias=include_bias))
+        self.f = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.f(x)
+
+
+class DecoupledSmileMIEstimator(nn.Module):
+    def __init__(
+            self,
+            feature_size: int,
+            critic_output_size: int,
+            hidden_sizes: list,
+            clip: float,
+            include_bias: bool = True,
+        ):
+        super(DecoupledSmileMIEstimator, self).__init__()
+
+        layers = []
+        input_size = feature_size
+        for hidden_size in hidden_sizes:
+            layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            layers.append(nn.ReLU())
+            input_size = hidden_size
+        layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
+
+        self.v_encoder = nn.Sequential(*layers)
+        self.W = nn.Linear(critic_output_size, critic_output_size, bias=False)
+        self.clip = clip
+
+    def forward(self, v0, v1):
+        v0_encoded = self.v_encoder(v0)
+        v1_encoded = self.v_encoder(v1)
+        v1_encoded_transformed = self.W(v1_encoded)
+        scores = torch.matmul(v0_encoded, v1_encoded_transformed.t())
+        MI = estimate_mutual_information('smile', scores, clip=self.clip)
+        return MI
+    
+
+class DownwardSmileMIEstimator(nn.Module):
+    def __init__(
+            self,
+            feature_size: int,
+            critic_output_size: int,
+            hidden_sizes_v_critic: list,
+            hidden_sizes_xi_critic: list,
+            clip: float,
+            include_bias: bool = True
+        ):
+        super(DownwardSmileMIEstimator, self).__init__()
+
+        v_encoder_layers = []
+        input_size = feature_size
+        for hidden_size in hidden_sizes_v_critic:
+            # TODO: Understand what the fuck spectral norm actually is
+            v_encoder_layers.append(spectral_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
+            v_encoder_layers.append(nn.ReLU())
+            input_size = hidden_size
+        v_encoder_layers.append(spectral_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
+        self.v_encoder = nn.Sequential(*v_encoder_layers)
+
+        atom_encoder_layers = []
+        input_size = 1
+        for hidden_size in hidden_sizes_xi_critic:
+            atom_encoder_layers.append(spectral_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
+            atom_encoder_layers.append(nn.ReLU())
+            input_size = hidden_size
+        atom_encoder_layers.append(spectral_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
+        self.atom_encoder = nn.Sequential(*atom_encoder_layers)
+
+        self.clip = clip
+    
+    def forward(self, v1, x0i):
+        v1_encoded = self.v_encoder(v1)
+        x0i_encoded = self.atom_encoder(x0i)
+
+        scores = torch.matmul(v1_encoded, x0i_encoded.t())
+        MI = estimate_mutual_information('smile', scores, clip=self.clip)
+        return MI
+
+
+class CLUB(nn.Module):  # CLUB: Mutual Information Contrastive Learning Upper Bound
+    '''
+        This class provides the CLUB estimation to I(X,Y)
+        Method:
+            forward() :      provides the estimation with input samples  
+            loglikeli() :   provides the log-likelihood of the approximation q(Y|X) with input samples
+        Arguments:
+            x_dim, y_dim :         the dimensions of samples from X, Y respectively
+            hidden_size :          the dimension of the hidden layer of the approximation network q(Y|X)
+            x_samples, y_samples : samples from X and Y, having shape [sample_size, x_dim/y_dim] 
+    '''
+    def __init__(
+            self,
+            v_dim,
+            mu_hidden_sizes: list,
+            logvar_hidden_sizes: list
+        ):
+        super(CLUB, self).__init__()
+        # p_mu outputs mean of q(Y|X)
+        # p_logvar outputs log of variance of q(Y|X)
+
+        # NOTE: hard coding in 1 for output dim here (and below) so that we don't have to make assumptions about the covariance matrix between the different components of y
+        p_mu_layers = []
+        input_size = v_dim
+        for hidden_size in mu_hidden_sizes:
+            p_mu_layers.append(nn.Linear(input_size, hidden_size))
+            p_mu_layers.append(nn.ReLU())
+            input_size = hidden_size
+        p_mu_layers.append(nn.Linear(input_size, 1))
+        self.p_mu = nn.Sequential(*p_mu_layers)
+
+        p_logvar_layers = []
+        input_size = v_dim
+        for hidden_size in logvar_hidden_sizes:
+            p_logvar_layers.append(nn.Linear(input_size, hidden_size))
+            p_logvar_layers.append(nn.ReLU())
+            input_size = hidden_size
+        p_logvar_layers.append(nn.Linear(input_size, 1))
+        p_logvar_layers.append(nn.Tanh())
+        self.p_logvar = nn.Sequential(*p_logvar_layers)
+
+
+    def get_mu_logvar(self, x_samples):
+        mu = self.p_mu(x_samples)
+        logvar = self.p_logvar(x_samples)
+        return mu, logvar
+    
+    def forward(self, x_samples, y_samples): 
+        mu, logvar = self.get_mu_logvar(x_samples)
+        
+        # log of conditional probability of positive sample pairs
+        positive = - (mu - y_samples)**2 /2./logvar.exp()  
+        
+        prediction_1 = mu.unsqueeze(1)          # shape [nsample,1,dim]
+        y_samples_1 = y_samples.unsqueeze(0)    # shape [1,nsample,dim]
+
+        # log of conditional probability of negative sample pairs
+        negative = - ((y_samples_1 - prediction_1)**2).mean(dim=1)/2./logvar.exp() 
+
+        return (positive.sum(dim = -1) - negative.sum(dim = -1)).mean()
+
+    def loglikeli(self, x_samples, y_samples): # unnormalized loglikelihood 
+        mu, logvar = self.get_mu_logvar(x_samples)
+        return 0.5 * (-(mu - y_samples)**2 /logvar.exp()-logvar - torch.log(torch.tensor(2 * math.pi))).sum(dim=1).mean(dim=0)
+    # NOTE: y should be dim 1
+    def learning_loss(self, x_samples, y_samples):
+        return - self.loglikeli(x_samples, y_samples)
+
+    
