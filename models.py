@@ -35,16 +35,23 @@ class DecoupledSmileMIEstimator(nn.Module):
             hidden_sizes: list,
             clip: float,
             include_bias: bool = True,
+            add_spec_norm: bool = False
         ):
         super(DecoupledSmileMIEstimator, self).__init__()
+
+        def spec_norm(layer):
+            if add_spec_norm:
+                return spectral_norm(layer)
+            else:
+                return layer
 
         layers = []
         input_size = feature_size
         for hidden_size in hidden_sizes:
-            layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            layers.append(spec_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
             layers.append(nn.ReLU())
             input_size = hidden_size
-        layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
+        layers.append(spec_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
 
         self.v_encoder = nn.Sequential(*layers)
         self.W = nn.Linear(critic_output_size, critic_output_size, bias=False)
@@ -67,28 +74,35 @@ class DownwardSmileMIEstimator(nn.Module):
             hidden_sizes_v_critic: list,
             hidden_sizes_xi_critic: list,
             clip: float,
-            include_bias: bool = True
+            include_bias: bool = True,
+            add_spec_norm: bool = False
         ):
         super(DownwardSmileMIEstimator, self).__init__()
+
+        def spec_norm(layer):
+            if add_spec_norm:
+                return spectral_norm(layer)
+            else:
+                return layer
 
         v_encoder_layers = []
         input_size = feature_size
         for hidden_size in hidden_sizes_v_critic:
             # TODO: Understand what the fuck spectral norm actually is
             # NOTE: Spectral norm removed, stabalizes shit but seems to hamstring downward critics hardddddd
-            v_encoder_layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            v_encoder_layers.append(spec_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
             v_encoder_layers.append(nn.ReLU())
             input_size = hidden_size
-        v_encoder_layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
+        v_encoder_layers.append(spec_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
         self.v_encoder = nn.Sequential(*v_encoder_layers)
 
         atom_encoder_layers = []
         input_size = 1 # 1 becuase this will always be the dim of a constituent part of our system
         for hidden_size in hidden_sizes_xi_critic:
-            atom_encoder_layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            atom_encoder_layers.append(spec_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
             atom_encoder_layers.append(nn.ReLU())
             input_size = hidden_size
-        atom_encoder_layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
+        atom_encoder_layers.append(spec_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
         self.atom_encoder = nn.Sequential(*atom_encoder_layers)
 
         self.clip = clip
