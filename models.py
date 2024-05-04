@@ -75,19 +75,20 @@ class DownwardSmileMIEstimator(nn.Module):
         input_size = feature_size
         for hidden_size in hidden_sizes_v_critic:
             # TODO: Understand what the fuck spectral norm actually is
-            v_encoder_layers.append(spectral_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
+            # NOTE: Spectral norm removed, stabalizes shit but seems to hamstring downward critics hardddddd
+            v_encoder_layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
             v_encoder_layers.append(nn.ReLU())
             input_size = hidden_size
-        v_encoder_layers.append(spectral_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
+        v_encoder_layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
         self.v_encoder = nn.Sequential(*v_encoder_layers)
 
         atom_encoder_layers = []
-        input_size = 1
+        input_size = 1 # 1 becuase this will always be the dim of a constituent part of our system
         for hidden_size in hidden_sizes_xi_critic:
-            atom_encoder_layers.append(spectral_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
+            atom_encoder_layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
             atom_encoder_layers.append(nn.ReLU())
             input_size = hidden_size
-        atom_encoder_layers.append(spectral_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
+        atom_encoder_layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
         self.atom_encoder = nn.Sequential(*atom_encoder_layers)
 
         self.clip = clip
@@ -97,6 +98,47 @@ class DownwardSmileMIEstimator(nn.Module):
         x0i_encoded = self.atom_encoder(x0i)
 
         scores = torch.matmul(v1_encoded, x0i_encoded.t())
+        MI = estimate_mutual_information('smile', scores, clip=self.clip)
+        return MI
+    
+class GeneralSmileMIEstimator(nn.Module):
+    def __init__(
+            self,
+            x_dim: int,
+            y_dim: int,
+            critic_output_size: int,
+            x_critics_hidden_sizes: list,
+            y_critics_hidden_sizes: list,
+            clip: float,
+            include_bias: bool = True
+        ):
+        super(GeneralSmileMIEstimator, self).__init__()
+
+        x_encoder_layers = []
+        input_size = x_dim
+        for hidden_size in x_critics_hidden_sizes:
+            x_encoder_layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            x_encoder_layers.append(nn.ReLU())
+            input_size = hidden_size
+        x_encoder_layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
+        self.x_encoder = nn.Sequential(*x_encoder_layers)
+
+        y_encoder_layers = []
+        input_size = y_dim
+        for hidden_size in y_critics_hidden_sizes:
+            y_encoder_layers.append(nn.Linear(input_size, hidden_size, bias=include_bias))
+            y_encoder_layers.append(nn.ReLU())
+            input_size = hidden_size
+        y_encoder_layers.append(nn.Linear(input_size, critic_output_size, bias=include_bias))
+        self.y_encoder = nn.Sequential(*y_encoder_layers)
+
+        self.clip = clip
+
+    def forward(self, x, y):
+        x_encoded = self.x_encoder(x)
+        y_encoded = self.y_encoder(y)
+
+        scores = torch.matmul(x_encoded, y_encoded.t())
         MI = estimate_mutual_information('smile', scores, clip=self.clip)
         return MI
 

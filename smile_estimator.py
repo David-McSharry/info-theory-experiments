@@ -2,8 +2,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def logmeanexp_diag(x, device='cuda'):
+def logmeanexp_diag(x, device=DEVICE):
     """Compute logmeanexp over the diagonal elements of x."""
     batch_size = x.size(0)
 
@@ -13,7 +14,7 @@ def logmeanexp_diag(x, device='cuda'):
     return logsumexp - torch.log(torch.tensor(num_elem).float()).to(device)
 
 
-def logmeanexp_nodiag(x, dim=None, device='cuda'):
+def logmeanexp_nodiag(x, dim=None, device=DEVICE):
     batch_size = x.size(0)
     if dim is None:
         dim = (0, 1)
@@ -95,7 +96,7 @@ def mine_lower_bound(f, buffer=None, momentum=0.9):
     MINE lower bound based on DV inequality. 
     """
     if buffer is None:
-        buffer = torch.tensor(1.0).cuda()
+        buffer = torch.tensor(1.0).to(f.device)
     first_term = f.diag().mean()
 
     buffer_update = logmeanexp_nodiag(f).exp()
