@@ -133,56 +133,63 @@ def prepare_ecog_dataset_no_local():
     return dataset_pairs
 
 
+class ECoGDataset(Dataset):
+    def __init__(self):
+        self.data_pairs = prepare_ecog_dataset_no_local()
 
-print(prepare_ecog_dataset_no_local().shape)
-
-
-
-
-def prepare_ecog_dataset():
-
-
-    def _butter_highpass(cutoff, fs, order=5):
-        nyq = 0.5 * fs
-        normal_cutoff = cutoff / nyq
-        b, a = butter(order, normal_cutoff, btype='high', analog=False)
-        return b, a
+    def __len__(self):
+        return self.data_pairs.size(0)
+    
+    def __getitem__(self, idx):
+        return self.data_pairs[idx]
 
 
-    def _butter_highpass_filter(data, cutoff, fs, order=5):
-        b, a = _butter_highpass(cutoff, fs, order=order)
-        y = filtfilt(b, a, data)
-        return y
+
+# def prepare_ecog_dataset():
 
 
-    num_channels = 64
-    data_list = []
-    for i in range(1, num_channels + 1):
+#     def _butter_highpass(cutoff, fs, order=5):
+#         nyq = 0.5 * fs
+#         normal_cutoff = cutoff / nyq
+#         b, a = butter(order, normal_cutoff, btype='high', analog=False)
+#         return b, a
 
-        channel_data = scipy.io.loadmat(f'/vol/bitbucket/dm2223/info-theory-experiments/data/ecog_data_raw/ECoG_ch{i}.mat')
-        data = channel_data[f'ECoGData_ch{i}'].squeeze()
 
-        # high pass filter at 1 Hz
-        fs = 1000  # original sampling rate
-        cutoff = 1  # cutoff frequency for high pass filter
-        data = _butter_highpass_filter(data, cutoff, fs)
+#     def _butter_highpass_filter(data, cutoff, fs, order=5):
+#         b, a = _butter_highpass(cutoff, fs, order=order)
+#         y = filtfilt(b, a, data)
+#         return y
 
-        # downsample to 300 Hz
-        downsample_rate = int(fs / 300)  # calculate downsample rate
-        data = decimate(data, downsample_rate)
 
-        # standardise across features. Comes last as the data being fed into our ML model should be standardised
-        data = (data - np.mean(data)) / np.std(data)
+#     num_channels = 64
+#     data_list = []
+#     for i in range(1, num_channels + 1):
 
-        data_list.append(data) 
+#         channel_data = scipy.io.loadmat(f'/Users/davidmcsharry/dev/imperial/info-theory-experiments/ecog/ECoG_ch{i}.mat')
+#         data = channel_data[f'ECoGData_ch{i}'].squeeze()
 
-    # Stack all channel data into a single numpy array
-    all_data = np.stack(data_list, axis=0)
+#         # high pass filter at 1 Hz
+#         fs = 1000  # original sampling rate
+#         cutoff = 1  # cutoff frequency for high pass filter
+#         data = _butter_highpass_filter(data, cutoff, fs)
 
-    dataset_tensor = torch.tensor(all_data).T
+#         # downsample to 300 Hz
+#         downsample_rate = int(fs / 300)  # calculate downsample rate
+#         data = decimate(data, downsample_rate)
 
-    dataset_pairs = prepare_batch(dataset_tensor)
-    # save as dataset
-    torch.save(dataset_pairs, '/vol/bitbucket/dm2223/info-theory-experiments/data/ecog_data_pairs.pth')
+#         # standardise across features. Comes last as the data being fed into our ML model should be standardised
+#         data = (data - np.mean(data)) / np.std(data)
 
-    return None
+#         data_list.append(data) 
+
+#     # Stack all channel data into a single numpy array
+#     all_data = np.stack(data_list, axis=0)
+
+#     dataset_tensor = torch.tensor(all_data).T
+
+#     dataset_pairs = prepare_batch(dataset_tensor)
+#     # save as dataset
+#     torch.save(dataset_pairs, '/Users/davidmcsharry/dev/imperial/info-theory-experiments/ecog/ecog_data_pairs.pth')
+
+#     return None
+
