@@ -69,7 +69,8 @@ class DecoupledSmileMIEstimator(nn.Module):
             self,
             feature_size: int,
             critic_output_size: int,
-            hidden_sizes: list,
+            hidden_sizes_1: list,
+            hidden_sizes_2: list,
             clip: float,
             include_bias: bool = True,
             add_spec_norm: bool = False
@@ -84,21 +85,29 @@ class DecoupledSmileMIEstimator(nn.Module):
 
         layers = []
         input_size = feature_size
-        for hidden_size in hidden_sizes:
+        for hidden_size in hidden_sizes_1:
+            layers.append(spec_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
+            layers.append(nn.ReLU())
+            input_size = hidden_size
+        layers.append(spec_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
+        self.critic_1 = nn.Sequential(*layers)
+
+        layers = []
+        input_size = feature_size
+        for hidden_size in hidden_sizes_2:
             layers.append(spec_norm(nn.Linear(input_size, hidden_size, bias=include_bias)))
             layers.append(nn.ReLU())
             input_size = hidden_size
         layers.append(spec_norm(nn.Linear(input_size, critic_output_size, bias=include_bias)))
 
-        self.v_encoder = nn.Sequential(*layers)
-        self.W = nn.Linear(critic_output_size, critic_output_size, bias=False)
+        self.critic_2 = nn.Sequential(*layers)
         self.clip = clip
 
-    def forward(self, v0, v1):
-        v0_encoded = self.v_encoder(v0)
-        v1_encoded = self.v_encoder(v1)
-        v1_encoded_transformed = self.W(v1_encoded)
-        scores = torch.matmul(v0_encoded, v1_encoded_transformed.t())
+    def forward(self, x1, x2):
+        x1_critic = self.critic_1(x1)
+        x2_critic = self.critic_2(x2)
+
+        scores = torch.matmul(x1_critic, x2_critic.t())
         MI = estimate_mutual_information('smile', scores, clip=self.clip)
         return MI
     
