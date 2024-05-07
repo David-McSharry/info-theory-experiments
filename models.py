@@ -13,6 +13,7 @@ class SupervenientFeatureNetwork(nn.Module):
             include_bias: bool = True
         ):
         super(SupervenientFeatureNetwork, self).__init__()
+        self.feature_size = feature_size
         layers = []
         input_size = num_atoms
         for hidden_size in hidden_sizes:
@@ -28,11 +29,19 @@ class SupervenientFeatureNetwork(nn.Module):
 
 
 class SkipConnectionSupervenientFeatureNetwork(nn.Module):
-    def __init__(self, num_atoms: int, feature_size: int, hidden_sizes: list, include_bias: bool = True):
+    def __init__(
+        self,
+        num_atoms: int,
+        feature_size: int,
+        hidden_sizes: list,
+        include_bias: bool = True
+        ):
         super(SkipConnectionSupervenientFeatureNetwork, self).__init__()
 
         if not hidden_sizes:
             raise ValueError("hidden_sizes must contain at least one element")
+        
+        self.feature_size = feature_size
 
         # Use the first hidden layer size for the initial projection
         self.initial_projection = nn.Linear(num_atoms, hidden_sizes[0], bias=include_bias)
