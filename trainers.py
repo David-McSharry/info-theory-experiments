@@ -34,6 +34,7 @@ def train_feature_network(
         raise ValueError(f"dataset_type must be one of {valid_dataset_types}")
     # make sure that if config['train_model_B'] is True, then feature_network_A is not None, and if False, then it is None, raise error otherwise
     if config['train_model_B']:
+        print("<<Training model B>>")
         if feature_network_A is None:
             raise ValueError("feature_network_A must be provided if training model B")
     else:
@@ -41,40 +42,40 @@ def train_feature_network(
             raise ValueError("feature_network_A must be None if not training model B")
     if not config['train_mode']: # if eval_mode => then should be no feature_network_A
         if feature_network_A is not None:
-            raise ValueError("feature_network_A must be None if not training model B")
+            raise ValueError("feature_network_A must be None if not training model B")        
 
-    wandb.init(project="bits-dataset-neurips", config=config)
+    wandb.init(project=f"{config['dataset_type']}-Train={config['train_mode']}-model_B={config['train_model_B']}-dataset-neurips", config=config)
 
     decoupled_MI_estimator = DecoupledSmileMIEstimator(
         feature_size=config['feature_size'],
-        critic_output_size=config['critic_output_size'],
-        hidden_sizes_1=config['decoupled_critic_hidden_sizes_1'],
-        hidden_sizes_2=config['decoupled_critic_hidden_sizes_2'],
+        critic_output_size=config['decoupled_critic_config']['critic_output_size'],
+        hidden_sizes_1=config['decoupled_critic_config']['hidden_sizes_encoder_1'],
+        hidden_sizes_2=config['decoupled_critic_config']['hidden_sizes_encoder_2'],
         clip=config['clip'],
-        include_bias=config['bias']
+        include_bias=config['decoupled_critic_config']['bias']
         ).to(device)
     downward_MI_estimators = [
         DownwardSmileMIEstimator(
             feature_size=config['feature_size'],
-            critic_output_size=config['critic_output_size'],
-            hidden_sizes_v_critic=config['downward_hidden_sizes_v_critic'],
-            hidden_sizes_xi_critic=config['downward_hidden_sizes_xi_critic'],
+            critic_output_size=config['downward_critics_config']['critic_output_size'],
+            hidden_sizes_v_critic=config['downward_critics_config']['hidden_sizes_v_critic'],
+            hidden_sizes_xi_critic=config['downward_critics_config']['hidden_sizes_xi_critic'],
             clip=config['clip'],
-            include_bias=config['bias']
+            include_bias=config['downward_critics_config']['bias']
             ).to(device) 
         for _ in range(config['num_atoms'])
     ]
 
     decoupled_optimizer = torch.optim.Adam(
         decoupled_MI_estimator.parameters(),
-        lr=config["decoupled_critic_lr"],
-        weight_decay=config["weight_decay"]
+        lr=config['decoupled_critic_config']["lr"],
+        weight_decay=config['decoupled_critic_config']["weight_decay"]
     )
     downward_optims = [
         torch.optim.Adam(
             dc.parameters(),
-            lr=config["downward_lr"],
-            weight_decay=config["weight_decay"]
+            lr=config['downward_critics_config']["lr"],
+            weight_decay=config['downward_critics_config']["weight_decay"]
         ) 
         for dc in downward_MI_estimators
     ]
@@ -85,45 +86,45 @@ def train_feature_network(
         xor_estimator = GeneralSmileMIEstimator(
             x_dim=config['feature_size'],
             y_dim=1,
-            critic_output_size=config['critic_output_size'],
+            critic_output_size=32,
             x_critics_hidden_sizes=[512, 512, 128],
             y_critics_hidden_sizes=[512, 512, 128],
             clip=config['clip'],
-            include_bias=config['bias']
+            include_bias=True
         ).to(device)
         extra_bit_estimator = GeneralSmileMIEstimator(
             x_dim=config['feature_size'],
             y_dim=1,
-            critic_output_size=config['critic_output_size'],
+            critic_output_size=32,
             x_critics_hidden_sizes=[512, 512, 128],
             y_critics_hidden_sizes=[512, 512, 128],
             clip=config['clip'],
-            include_bias=config['bias']
+            include_bias=True
         ).to(device)
         bonus_bit_estimator = GeneralSmileMIEstimator(
             x_dim=config['feature_size'],
             y_dim=1,
-            critic_output_size=config['critic_output_size'],
+            critic_output_size=32,
             x_critics_hidden_sizes=[512, 512, 128],
             y_critics_hidden_sizes=[512, 512, 128],
             clip=config['clip'],
-            include_bias=config['bias']
+            include_bias=True
         ).to(device)
         extra_bit_optimizer = torch.optim.Adam(
             extra_bit_estimator.parameters(),
             lr=1e-4,
-            weight_decay=config["weight_decay"]
+            weight_decay=0
         )
 
         bonus_bit_optimizer = torch.optim.Adam(
             bonus_bit_estimator.parameters(),
             lr=1e-4,
-            weight_decay=config["weight_decay"]
+            weight_decay=0
         )
         xor_optimizer = torch.optim.Adam(
             xor_estimator.parameters(),
             lr=1e-4,
-            weight_decay=config["weight_decay"]
+            weight_decay=0
         )
 
 
@@ -131,24 +132,24 @@ def train_feature_network(
     if config['train_mode']:
         feature_optimizer = torch.optim.Adam(
             feature_network_training.parameters(),
-            lr=config["feature_lr"],
-            weight_decay=config["weight_decay"]
+            lr=config['feature_network_config']["lr"],
+            weight_decay=config['feature_network_config']["weight_decay"]
         )
         # init train_model_B specific estimators
         if config['train_model_B']:
             MI_AB_estimator = GeneralSmileMIEstimator(
                 x_dim=config['feature_size'],
                 y_dim=config['feature_size'],
-                critic_output_size=config['critic_output_size'],
+                critic_output_size=config['downward_critics_config']['critic_output_size'],
                 x_critics_hidden_sizes=[512, 512, 128],
                 y_critics_hidden_sizes=[512, 512, 128],
                 clip=config['clip'],
-                include_bias=config['bias']
+                include_bias=True
             ).to(device)
             MI_AB_optimizer = torch.optim.Adam(
                 MI_AB_estimator.parameters(),
-                lr=1e-4,
-                weight_decay=config["weight_decay"]
+                lr=1e-3,
+                weight_decay=0
             )
 
     # TODO: figure out why only f network is being watched, I would like to keep a closer eye on the grad n params.
@@ -156,9 +157,9 @@ def train_feature_network(
     # Eg, https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/gan/gan.py 
     # ^ this does not require retain_graph=True, so maybe this can be optomized somehow
     wandb.watch(feature_network_training, log='all')
-    wandb.watch(decoupled_MI_estimator, log="all")
-    for dc in downward_MI_estimators:
-        wandb.watch(dc, log='all')
+    # wandb.watch(decoupled_MI_estimator, log="all")
+    # for dc in downward_MI_estimators:
+    #     wandb.watch(dc, log='all')
 
     ##
     ## TRAINING LOOP
@@ -171,14 +172,15 @@ def train_feature_network(
         for batch_num, batch in enumerate(trainloader):
             x0 = batch[:, 0].to(device).float()
             x1 = batch[:, 1].to(device).float()
-
-            v0 = feature_network_training(x0).detach()
-            v1 = feature_network_training(x1).detach()
+            v0_B = feature_network_training(x0).detach()
+            v1_B = feature_network_training(x1).detach()
+            if config['train_model_B']:
+                v0_A = feature_network_A(x0).detach()
 
 
             # update decoupled critic
             decoupled_optimizer.zero_grad()
-            decoupled_MI = decoupled_MI_estimator(v0, v1)
+            decoupled_MI = decoupled_MI_estimator(v0_B, v1_B)
             decoupled_loss = -decoupled_MI
             decoupled_loss.backward(retain_graph=True)
             decoupled_optimizer.step()
@@ -188,50 +190,63 @@ def train_feature_network(
             for i in range(config['num_atoms']):
                 downward_optims[i].zero_grad()
                 channel_i = x0[:, i].unsqueeze(1).detach()
-                downward_MI_i = downward_MI_estimators[i](v1, channel_i)
+                downward_MI_i = downward_MI_estimators[i](v1_B, channel_i)
                 downward_loss = - downward_MI_i
                 downward_loss.backward(retain_graph=True)
                 downward_optims[i].step()
-                wandb.log({
-                    f"downward_MI_{i}": downward_MI_i   
-                }, step=step)
+                # wandb.log({
+                #     f"downward_MI_{i}": downward_MI_i   
+                # }, step=step)
+
+            # update MI_AB_estimator
+            if config['train_model_B']:
+                MI_AB_optimizer.zero_grad()
+                MI_AB = MI_AB_estimator(v0_B, v0_A)
+                MI_AB_loss = -MI_AB
+                MI_AB_loss.backward(retain_graph=True)
+                MI_AB_optimizer.step()
+                wandb.log({"MI_AB": MI_AB},step=step)
 
 
             # Find Psi (and maybe adjust it)
+            if config["train_mode"]:
+                feature_optimizer.zero_grad()
+
             downward_MIs_post_update = [] # used for calculating the adjusted Psi and Psi adjustment
-            v0 = feature_network_training(x0)
-            v1 = feature_network_training(x1)
+            v0_B = feature_network_training(x0)
+            v1_B = feature_network_training(x1)
 
             for i in range(config['num_atoms']): # finds sum of downward terms
                 channel_i = x0[:, i].unsqueeze(1)
-                channel_i_MI = downward_MI_estimators[i](v1, channel_i)
+                channel_i_MI = downward_MI_estimators[i](v1_B, channel_i)
                 downward_MIs_post_update.append(channel_i_MI)
 
             sum_downward_MI_post_update = sum(downward_MIs_post_update)
-            decoupled_MI_post_update = decoupled_MI_estimator(v0, v1)
+            decoupled_MI_post_update = decoupled_MI_estimator(v0_B, v1_B)
 
-            if config["adjust_Psi"]:
-                clipped_min_MIs = max(0, min(downward_MIs_post_update))
-                Psi_adjustment = (config['num_atoms'] - 1) * clipped_min_MIs
-                Psi = decoupled_MI_post_update - sum_downward_MI_post_update + Psi_adjustment
-            else:
-                Psi = decoupled_MI_post_update - sum_downward_MI_post_update
+            # if config["adjust_Psi"]:
+            #     clipped_min_MIs = max(0, min(downward_MIs_post_update))
+            #     Psi_adjustment = (config['num_atoms'] - 1) * clipped_min_MIs
+            #     Psi = decoupled_MI_post_update - sum_downward_MI_post_update + Psi_adjustment
+            # else:
+            #     Psi = decoupled_MI_post_update - sum_downward_MI_post_update
+            Psi = 0
 
             if config['train_mode']: # if in training mode, update the network
-                feature_optimizer.zero_grad()
-                if config['train_model_B']: # if training a model_B, update MI_AB critic and feature_network loss
-                    v0_A = feature_network_A(x0).detach()
-                    # update MI_AB critic
-                    MI_AB_optimizer.zero_grad()
-                    MI_AB = MI_AB_estimator(v0, v0_A)
-                    MI_AB_loss = - MI_AB
-                    MI_AB_loss.backward(retain_graph=True)
-                    MI_AB_optimizer.step()
-                    MI_AB_post_update = MI_AB_estimator(v0, v0_A)
-                    wandb.log({"MI_AB": MI_AB_post_update},step=step)
-                    feature_loss = - Psi + MI_AB_post_update
+                if config['train_model_B']:
+                    MI_AB_post_update = MI_AB_estimator(v0_B, v0_A)
+                    if config['minimize_neg_terms_until'] < step:
+
+                        Psi = decoupled_MI_post_update - sum_downward_MI_post_update
+                        feature_loss = - Psi + MI_AB_post_update
+                    else:
+                        feature_loss = - (-sum_downward_MI_post_update - MI_AB_post_update)
                 else:
-                    feature_loss = - Psi
+                    if config['minimize_neg_terms_until'] < step:
+                        Psi = decoupled_MI_post_update - sum_downward_MI_post_update
+                        feature_loss = - Psi
+                    else:
+                        feature_loss = - (-sum_downward_MI_post_update)
 
                 if config['start_updating_f_after'] < step:
                     if batch_num % config['update_f_every_N_steps'] == 0:
@@ -242,31 +257,32 @@ def train_feature_network(
                 "decoupled_MI": decoupled_MI_post_update,
                 "sum_downward_MI": sum_downward_MI_post_update,
                 "Psi": Psi,
+                "feature_loss": feature_loss,
             }, step=step)
 
 
             if config["dataset_type"] == 'bits':
-                v0 = feature_network_training(x0).detach()
-                v1 = feature_network_training(x1).detach()
+                v0_B = feature_network_training(x0).detach()
+                v1_B = feature_network_training(x1).detach()
                 xor_bits = (reduce(x0[: , :5], 'b n -> b', 'sum') % 2).unsqueeze(1)
                 extra_bit = x0[:, -1].unsqueeze(1)
                 bonus_bit = ( xor_bits + extra_bit ) % 2
 
 
                 xor_optimizer.zero_grad()
-                xor_MI = xor_estimator(v0, xor_bits)
+                xor_MI = xor_estimator(v0_B, xor_bits)
                 xor_loss = -xor_MI
                 xor_loss.backward(retain_graph=True)
                 xor_optimizer.step()
 
                 extra_bit_optimizer.zero_grad()
-                extra_bit_MI = extra_bit_estimator(v0, extra_bit)
+                extra_bit_MI = extra_bit_estimator(v0_B, extra_bit)
                 extra_bit_loss = -extra_bit_MI
                 extra_bit_loss.backward(retain_graph=True)
                 extra_bit_optimizer.step()
 
                 bonus_bit_optimizer.zero_grad()
-                bonus_bit_MI = bonus_bit_estimator(v0, bonus_bit)
+                bonus_bit_MI = bonus_bit_estimator(v0_B, bonus_bit)
                 bonus_bit_loss = -bonus_bit_MI
                 bonus_bit_loss.backward(retain_graph=True)
                 bonus_bit_optimizer.step()
