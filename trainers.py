@@ -16,6 +16,7 @@ def train_feature_network(
     config,
     trainloader,
     feature_network_training,
+    project_name: str,
     feature_network_A = None,
 ):
     """
@@ -44,7 +45,7 @@ def train_feature_network(
         if feature_network_A is not None:
             raise ValueError("feature_network_A must be None if not training model B")        
 
-    wandb.init(project=f"{config['dataset_type']}-Train={config['train_mode']}-model_B={config['train_model_B']}-dataset-neurips", config=config)
+    wandb.init(project=project_name, config=config)
 
     decoupled_MI_estimator = DecoupledSmileMIEstimator(
         feature_size=config['feature_size'],
@@ -194,9 +195,9 @@ def train_feature_network(
                 downward_loss = - downward_MI_i
                 downward_loss.backward(retain_graph=True)
                 downward_optims[i].step()
-                # wandb.log({
-                #     f"downward_MI_{i}": downward_MI_i   
-                # }, step=step)
+                wandb.log({
+                    f"downward_MI_{i}": downward_MI_i   
+                }, step=step)
 
             # update MI_AB_estimator
             if config['train_model_B']:
@@ -224,26 +225,23 @@ def train_feature_network(
             sum_downward_MI_post_update = sum(downward_MIs_post_update)
             decoupled_MI_post_update = decoupled_MI_estimator(v0_B, v1_B)
 
-            # if config["adjust_Psi"]:
-            #     clipped_min_MIs = max(0, min(downward_MIs_post_update))
-            #     Psi_adjustment = (config['num_atoms'] - 1) * clipped_min_MIs
-            #     Psi = decoupled_MI_post_update - sum_downward_MI_post_update + Psi_adjustment
-            # else:
-            #     Psi = decoupled_MI_post_update - sum_downward_MI_post_update
-            Psi = 0
+            if config["adjust_Psi"]:
+                clipped_min_MIs = max(0, min(downward_MIs_post_update))
+                Psi_adjustment = (config['num_atoms'] - 1) * clipped_min_MIs
+                Psi = decoupled_MI_post_update - sum_downward_MI_post_update + Psi_adjustment
+            else:
+                Psi = decoupled_MI_post_update - sum_downward_MI_post_update
 
             if config['train_mode']: # if in training mode, update the network
                 if config['train_model_B']:
                     MI_AB_post_update = MI_AB_estimator(v0_B, v0_A)
                     if config['minimize_neg_terms_until'] < step:
 
-                        Psi = decoupled_MI_post_update - sum_downward_MI_post_update
                         feature_loss = - Psi + MI_AB_post_update
                     else:
                         feature_loss = - (-sum_downward_MI_post_update - MI_AB_post_update)
                 else:
                     if config['minimize_neg_terms_until'] < step:
-                        Psi = decoupled_MI_post_update - sum_downward_MI_post_update
                         feature_loss = - Psi
                     else:
                         feature_loss = - (-sum_downward_MI_post_update)
@@ -257,7 +255,7 @@ def train_feature_network(
                 "decoupled_MI": decoupled_MI_post_update,
                 "sum_downward_MI": sum_downward_MI_post_update,
                 "Psi": Psi,
-                "feature_loss": feature_loss,
+                # "feature_loss": feature_loss,
             }, step=step)
 
 

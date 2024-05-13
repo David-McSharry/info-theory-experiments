@@ -73,6 +73,52 @@ class SkipConnectionSupervenientFeatureNetwork(nn.Module):
         return x
 
 
+class NoSkipConnectionSupervenientFeatureNetwork(nn.Module):
+    def __init__(
+        self,
+        num_atoms: int,
+        feature_size: int,
+        hidden_sizes: list,
+        include_bias: bool = True
+        ):
+        super(NoSkipConnectionSupervenientFeatureNetwork, self).__init__()
+
+        if not hidden_sizes:
+            raise ValueError("hidden_sizes must contain at least one element")
+        
+        self.feature_size = feature_size
+
+        # Use the first hidden layer size for the initial projection
+        self.initial_projection = nn.Linear(num_atoms, hidden_sizes[0], bias=include_bias)
+
+        # Creating the hidden layers with skip connections
+        self.hidden_layers = nn.ModuleList()
+        input_size = hidden_sizes[0]
+        for hidden_size in hidden_sizes:
+            layer = nn.Linear(input_size, hidden_size, bias=include_bias)
+            self.hidden_layers.append(layer)
+            input_size = hidden_size
+
+        # Final downprojection to the feature size
+        self.final_projection = nn.Linear(input_size, feature_size, bias=include_bias)
+
+    def forward(self, x):
+        # Initial projection
+        x = self.initial_projection(x)
+
+        # Passing through each hidden layer with ReLU and skip connection
+        for layer in self.hidden_layers:
+            identity = x
+            x = layer(x)
+            x = F.relu(x)
+            # for experiment with no skip connections
+            # x = torch.add(x, identity)
+
+        # Final projection without non-linearity
+        x = self.final_projection(x)
+        return x
+
+
 class DecoupledSmileMIEstimator(nn.Module):
     def __init__(
             self,
