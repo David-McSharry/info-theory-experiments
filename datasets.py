@@ -5,7 +5,7 @@ import scipy.io
 import requests
 import zipfile
 import io
-from scipy.signal import butter, filtfilt, decimate
+from scipy.signal import butter, filtfilt
 from utils import prepare_batch
 
 class BitStringDataset(Dataset):
@@ -43,9 +43,12 @@ class BitStringDataset(Dataset):
 
 
 class ECoGDataset(Dataset):
-    def __init__(self):
+    def __init__(
+            self,
+            prepare_pairs: bool = True,
+        ):
 
-        self.data = self._prepare_ecog_dataset_no_local()
+        self.data = self._prepare_ecog_dataset_no_local(prepare_pairs)
 
     def __len__(self):
         return self.data.size(0)
@@ -59,7 +62,7 @@ class ECoGDataset(Dataset):
         return {name: zip_file.read(name) for name in zip_file.namelist()}
 
 
-    def _prepare_ecog_dataset_no_local(self):
+    def _prepare_ecog_dataset_no_local(self, prepare_pairs):
 
         def _butter_highpass(cutoff, fs, order=5):
             nyq = 0.5 * fs
@@ -91,7 +94,7 @@ class ECoGDataset(Dataset):
                 fs = 1000  # Sampling rate
                 cutoff = 1  # Hz
                 data = _butter_highpass_filter(data, cutoff, fs)
-                data = decimate(data, int(fs / 300), zero_phase=True)  # Change zero_phase based on needs
+                data = data[::3] # 1000
                 data = (data - np.mean(data)) / np.std(data)
 
                 data_list.append(data)
@@ -103,6 +106,9 @@ class ECoGDataset(Dataset):
         dataset_tensor = torch.tensor(all_data).T
 
         # here prepare_batch needs to be predefined or implemented
-        dataset_pairs = prepare_batch(dataset_tensor)
+        if prepare_pairs:
+            dataset_pairs = prepare_batch(dataset_tensor)
+            return dataset_pairs
+        else:
+            return dataset_tensor
 
-        return dataset_pairs
