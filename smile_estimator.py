@@ -117,14 +117,15 @@ def smile_lower_bound(f, clip=None):
     else:
         f_ = f
     z = logmeanexp_nodiag(f_, dim=(0, 1))
-    dv = f.diag().mean() - z
+    dv = (f.diag().mean() - z) 
 
-    js = js_fgan_lower_bound(f)
+    js = js_fgan_lower_bound(f) 
 
     with torch.no_grad():
         dv_js = dv - js
 
-    return js + dv_js
+    # multiply by log2(e) to convert nats to bits
+    return (js + dv_js) * np.log2(np.e)
 
 
 def estimate_mutual_information(estimator, scores,

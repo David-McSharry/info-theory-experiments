@@ -18,6 +18,7 @@ def train_feature_network(
     feature_network_training,
     project_name: str,
     feature_network_A = None,
+    model_dir_prefix = None
 ):
     """
     - Main function for training and evaluating the feature_network.
@@ -44,7 +45,9 @@ def train_feature_network(
     if not config['train_mode']: # if eval_mode => then should be no feature_network_A
         if feature_network_A is not None:
             raise ValueError("feature_network_A must be None if not training model B")        
-
+    if model_dir_prefix is None:
+        raise ValueError("model_dir_prefix must be provided")
+    
     wandb.init(project=project_name, config=config)
 
     decoupled_MI_estimator = DecoupledSmileMIEstimator(
@@ -293,7 +296,7 @@ def train_feature_network(
 
             step += 1
         
-    torch.save(feature_network_training.state_dict(), f"models/feature_network_{wandb.run.name}.pth")
+    torch.save(feature_network_training.state_dict(), f"models/{model_dir_prefix}-{wandb.run.name}.pth")
     
     return feature_network_training
 
