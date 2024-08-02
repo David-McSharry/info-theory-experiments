@@ -112,3 +112,27 @@ class ECoGDataset(Dataset):
         else:
             return dataset_tensor
 
+
+class ResidualStreamDataset(Dataset):
+    def __init__(
+        self,
+        AI_gen: bool,
+        index: int
+    ):
+        if AI_gen  == True:
+            data_path = f"activations/resid_actications_layer_{index}.pt"
+            data = torch.load(data_path)
+        else:
+            data_path = f"activations/econ_resid_activations_layer_{index}.pt"
+            data = torch.load(data_path)
+    
+        self.data = prepare_batch(data)
+        
+    def __len__(self):
+        return self.data.size(0)
+    
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+
+            
