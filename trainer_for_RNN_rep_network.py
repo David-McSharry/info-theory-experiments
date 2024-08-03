@@ -158,7 +158,7 @@ def train_feature_network(
     # TODO: Look at how GANs are trained with pytorch and make sure I'm not doing anything unreasonable.
     # Eg, https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/gan/gan.py 
     # ^ this does not require retain_graph=True, so maybe this can be optomized somehow
-    wandb.watch(feature_network_training, log='all')
+    # wandb.watch(feature_network_training, log='all') # NOTE: temp turned off
     # wandb.watch(decoupled_MI_estimator, log="all")
     # for dc in downward_MI_estimators:
     #     wandb.watch(dc, log='all')
@@ -174,8 +174,10 @@ def train_feature_network(
         for batch_num, batch in enumerate(trainloader):
             x0 = batch[:, 0].to(device).float()
             x1 = batch[:, 1].to(device).float()
-            v0_B = feature_network_training(x0).detach()
-            v1_B = feature_network_training(x1).detach()
+            v0_B = feature_network_training(x0).detach().squeeze(0)
+            v1_B = feature_network_training(x1).detach().squeeze(0)
+            print(f'feature size: {v0_B.shape}')
+            print(f'feature size: {v1_B.shape}')
             if config['train_model_B']:
                 v0_A = feature_network_A(x0).detach()
 
@@ -215,8 +217,8 @@ def train_feature_network(
                 feature_optimizer.zero_grad()
 
             downward_MIs_post_update = [] # used for calculating the adjusted Psi and Psi adjustment
-            v0_B = feature_network_training(x0)
-            v1_B = feature_network_training(x1)
+            v0_B = feature_network_training(x0).squeeze(0)
+            v1_B = feature_network_training(x1).squeeze(0)
 
             for i in range(config['num_atoms']): # finds sum of downward terms
                 channel_i = x0[:, i].unsqueeze(1)
@@ -261,8 +263,8 @@ def train_feature_network(
 
 
             if config["dataset_type"] == 'bits':
-                v0_B = feature_network_training(x0).detach()
-                v1_B = feature_network_training(x1).detach()
+                v0_B = feature_network_training(x0).detach().squeeze(0)
+                v1_B = feature_network_training(x1).detach().squeeze(0)
                 xor_bits = (reduce(x0[: , :5], 'b n -> b', 'sum') % 2).unsqueeze(1)
                 extra_bit = x0[:, -1].unsqueeze(1)
                 bonus_bit = ( xor_bits + extra_bit ) % 2
