@@ -136,3 +136,24 @@ class ResidualStreamDataset(Dataset):
 
 
             
+
+class FMRIDatasetConcat(Dataset):
+    def __init__(self):
+        self.indices = list(range(37, 50)) + list(range(89, 100))
+        self.data = prepare_batch(self.load_data())
+
+    def load_data(self):
+        concat_data = []
+        all_data = scipy.io.loadmat('HCP_100subj/Schaefer100_BOLD_HCP.mat')
+        all_data = all_data['BOLD_timeseries_HCP']
+        for index in self.indices:
+            data_for_index = all_data[index][0]
+            concat_data.append(data_for_index)
+        concat_data = np.concatenate(concat_data, axis=1)
+        return torch.tensor(concat_data, dtype=torch.float32).T
+
+    def __len__(self):
+        return self.data.size(0)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
