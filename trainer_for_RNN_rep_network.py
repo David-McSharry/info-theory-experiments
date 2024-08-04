@@ -31,7 +31,7 @@ def train_feature_network(
     - Psi can optionally be replaced with adjusted_Psi in any mode
     """
     
-    valid_dataset_types = ['bits', 'ecog', 'resid']
+    valid_dataset_types = ['bits', 'ecog', 'resid', 'FMRI']
     if config["dataset_type"] not in valid_dataset_types:
         raise ValueError(f"dataset_type must be one of {valid_dataset_types}")
     # make sure that if config['train_model_B'] is True, then feature_network_A is not None, and if False, then it is None, raise error otherwise
@@ -176,8 +176,6 @@ def train_feature_network(
             x1 = batch[:, 1].to(device).float()
             v0_B = feature_network_training(x0).detach().squeeze(0)
             v1_B = feature_network_training(x1).detach().squeeze(0)
-            print(f'feature size: {v0_B.shape}')
-            print(f'feature size: {v1_B.shape}')
             if config['train_model_B']:
                 v0_A = feature_network_A(x0).detach()
 

@@ -7,7 +7,10 @@ dataset = FMRIDatasetConcat()
 
 device = 'cuda'
 
-for seed in range(10):
+for i in range(1):
+
+    seed = 1 
+    torch.manual_seed(seed)
 
     config = {
         "torch_seed": seed,
@@ -19,7 +22,7 @@ for seed in range(10):
         "adjust_Psi": False,
         "clip": 5,
         "feature_size": 3,
-        "epochs": 150,
+        "epochs": 75,
         "start_updating_f_after": 300,
         "update_f_every_N_steps": 5,
         "minimize_neg_terms_until": 0,
@@ -74,10 +77,10 @@ for seed in range(10):
         "batch_size": 1000,
         "train_mode": False,
         "train_model_B": False,
-        "adjust_Psi": False,
+        "adjust_Psi": True,
         "clip": 5,
         "feature_size": 3,
-        "epochs": 50,
+        "epochs": 10,
         "start_updating_f_after": 300,
         "update_f_every_N_steps": 5,
         "minimize_neg_terms_until": 0,
