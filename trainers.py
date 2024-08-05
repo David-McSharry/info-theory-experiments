@@ -31,7 +31,7 @@ def train_feature_network(
     - Psi can optionally be replaced with adjusted_Psi in any mode
     """
     
-    valid_dataset_types = ['bits', 'ecog', 'resid', 'FMRI']
+    valid_dataset_types = ['bits', 'ecog', 'resid', 'FMRI', 'meg']
     if config["dataset_type"] not in valid_dataset_types:
         raise ValueError(f"dataset_type must be one of {valid_dataset_types}")
     # make sure that if config['train_model_B'] is True, then feature_network_A is not None, and if False, then it is None, raise error otherwise

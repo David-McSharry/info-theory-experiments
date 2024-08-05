@@ -138,6 +138,9 @@ class ResidualStreamDataset(Dataset):
             
 
 class FMRIDatasetConcat(Dataset):
+    """
+    Still valid, less data
+    """
     def __init__(self):
         self.indices = list(range(37, 50)) + list(range(89, 100))
         self.data = prepare_batch(self.load_data())
@@ -161,13 +164,16 @@ class FMRIDatasetConcat(Dataset):
 
 
 class FMRIDatasetConcatNoPrepareBatch(Dataset): # this is shape [N,D] rahter than [N-1,2,D]
+    """
+    Still valid, less data
+    """
     def __init__(self):
         self.indices = list(range(37, 50)) + list(range(89, 100))
         self.data = self.load_data()
 
     def load_data(self):
         concat_data = []
-        all_data = scipy.io.loadmat('HCP_100subj/Lausanne83_BOLD_HCP.mat')
+        all_data = scipy.io.loadmat('HCP_100subj/Schaefer100_BOLD_HCP.mat')
         all_data = all_data['BOLD_timeseries_HCP']
         for index in self.indices:
             data_for_index = all_data[index][0]
@@ -182,6 +188,42 @@ class FMRIDatasetConcatNoPrepareBatch(Dataset): # this is shape [N,D] rahter tha
         return self.data[idx]
     
 
+class FMRIDatasetConcatV2(Dataset):
+    """
+    The old version messed up indices in a way that does not invalidate results, just means they were produced on less data
+
+    This version uses the indices properly to only use default brain network.
+    """
+    def __init__(self):
+        data = scipy.io.loadmat('HCP_100subj/Schaefer100_BOLD_HCP.mat')
+        data_concat = []
+        for i in range(100):
+            patient_data = data['BOLD_timeseries_HCP'][i][0]
+            data_concat.append(patient_data)
+        data_concat = np.concatenate(data_concat, axis=1).T
+        indices = list(range(37, 50)) + list(range(89, 100))
+        num_indices = len(indices)
+        new_dataset = np.zeros((data_concat.shape[0], num_indices))
+        for i, idx in enumerate(indices):
+            new_dataset[:, i] = data_concat[:, idx]
+        self.data = torch.tensor(new_dataset, dtype=torch.float32)
+
+    def __len__(self):
+        return self.data.size(0)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+# Create an instance of the new dataset
+new_dataset_instance = FMRIDatasetConcatV2()
+
+# Print the size of the tensor in the new dataset
+print(new_dataset_instance.data.size())
+
+
+
+
+
 
 class BigActDataset(Dataset):
     def __init__(self):
@@ -193,6 +235,31 @@ class BigActDataset(Dataset):
         formatted_data = prepare_batch(concatenated_data)
         self.data = (formatted_data - formatted_data.mean(dim=0)) / formatted_data.std(dim=0)
 
+    def __len__(self):
+        return self.data.size(0)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+
+class MegDataset(Dataset):
+    def __init__(self):
+        # Load the .mat file
+        data_pla = scipy.io.loadmat('070814_2_PLA (1).mat')
+        
+        # Concatenate the data along the second dimension
+        concatenated_data = np.concatenate([data_pla['timeseries'][0][i].flatten() for i in range(data_pla['timeseries'][0].shape[0])], axis=0)
+        
+        # Reshape the concatenated data to the desired shape
+        reshaped_data = concatenated_data.reshape(data_pla['timeseries'][0].shape[0], -1)
+
+        # Convert to a torch tensor
+        data = (torch.tensor(reshaped_data, dtype=torch.float32).T)
+
+        # standardize the data
+        data = (data - data.mean(dim=0)) / data.std(dim=0)
+
+        self.data = prepare_batch(data)
 
     def __len__(self):
         return self.data.size(0)
@@ -201,6 +268,3 @@ class BigActDataset(Dataset):
         return self.data[idx]
 
 
-
-x = BigActDataset()
-print(x.data.size())
