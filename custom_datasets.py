@@ -190,7 +190,9 @@ class BigActDataset(Dataset):
             data = torch.load(f"activations2/econ_resid_actications_layer_3_{j}.pt")
             all_data.append(data)
         concatenated_data = torch.cat(all_data, dim=0)
-        self.data = prepare_batch(concatenated_data)
+        formatted_data = prepare_batch(concatenated_data)
+        self.data = (formatted_data - formatted_data.mean(dim=0)) / formatted_data.std(dim=0)
+
 
     def __len__(self):
         return self.data.size(0)

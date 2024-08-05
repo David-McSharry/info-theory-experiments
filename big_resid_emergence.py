@@ -22,7 +22,7 @@ for seed in range(1):
         "clip": 5,
         "feature_size": 3,
         "epochs": 75,
-        "start_updating_f_after": 300,
+        "start_updating_f_after": 60,
         "update_f_every_N_steps": 5,
         "minimize_neg_terms_until": 0,
         "downward_critics_config": {
@@ -50,7 +50,7 @@ for seed in range(1):
         }
     }
 
-    trainloader = torch.utils.data.DataLoader(dataset, batch_size=config['batch_size'], shuffle=False)
+    trainloader = torch.utils.data.DataLoader(dataset, batch_size=config['batch_size'], shuffle=True)
 
     skip_model = SkipConnectionSupervenientFeatureNetwork(
         num_atoms=config['num_atoms'],
