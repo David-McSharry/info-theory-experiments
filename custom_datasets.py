@@ -181,3 +181,24 @@ class FMRIDatasetConcatNoPrepareBatch(Dataset): # this is shape [N,D] rahter tha
     def __getitem__(self, idx):
         return self.data[idx]
     
+
+
+class BigActDataset(Dataset):
+    def __init__(self):
+        all_data = []
+        for j in range(1, 15):
+            data = torch.load(f"activations2/econ_resid_actications_layer_3_{j}.pt")
+            all_data.append(data)
+        concatenated_data = torch.cat(all_data, dim=0)
+        self.data = prepare_batch(concatenated_data)
+
+    def __len__(self):
+        return self.data.size(0)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+
+
+x = BigActDataset()
+print(x.data.size())

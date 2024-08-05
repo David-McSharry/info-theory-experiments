@@ -1,0 +1,141 @@
+What Is Economics?
+Economics is a social science that focuses on the production, distribution, and consumption of goods and services. The study of economics is primarily concerned with analyzing the choices that individuals, businesses, governments, and nations make to allocate limited resources. Economics has ramifications on a wide range of other fields, including politics, psychology, business, and law.
+
+KEY TAKEAWAYS
+Economics is the study of how people allocate scarce resources for production, distribution, and consumption, both individually and collectively.
+The field of economics is connected with and has ramifications on many others, such as politics, government, law, and business.
+The two branches of economics are microeconomics and macroeconomics.
+Economics focuses on efficiency in production and exchange.
+Gross Domestic Product (GDP) and the Consumer Price Index (CPI) are two of the most widely used economic indicators.
+Economics
+Zoe Hansen / Investopedia
+
+Understanding Economics
+Assuming humans have unlimited wants within a world of limited means, economists analyze how resources are allocated for production, distribution, and consumption.
+
+The study of microeconomics focuses on the choices of individuals and businesses, and macroeconomics concentrates on the behavior of the economy on an aggregate level.
+
+One of the earliest recorded economists was the 8th-century B.C. Greek farmer and poet Hesiod who wrote that labor, materials, and time needed to be allocated efficiently to overcome scarcity. The publication of Adam Smith's 1776 book An Inquiry Into the Nature and Causes of the Wealth of Nations sparked the beginning of the current Western contemporary economic theories.
+1
+
+Microeconomics
+Microeconomics studies how individual consumers and firms make decisions to allocate resources. Whether a single person, a household, or a business, economists may analyze how these entities respond to changes in price and why they demand what they do at particular price levels.
+
+Microeconomics analyzes how and why goods are valued differently, how individuals make financial decisions, and how they trade, coordinate, and cooperate.
+
+Within the dynamics of supply and demand, the costs of producing goods and services, and how labor is divided and allocated, microeconomics studies how businesses are organized and how individuals approach uncertainty and risk in their decision-making.
+
+Macroeconomics
+Macroeconomics is the branch of economics that studies the behavior and performance of an economy as a whole. Its primary focus is recurrent economic cycles and broad economic growth and development.
+
+It focuses on foreign trade, government fiscal and monetary policy, unemployment rates, the level of inflation, interest rates, the growth of total production output, and business cycles that result in expansions, booms, recessions, and depressions. 
+
+Using aggregate indicators, economists use macroeconomic models to help formulate economic policies and strategies.
+What Is the Role of an Economist?
+An economist studies the relationship between a society's resources and its production or output, and their opinions help shape economic policies related to interest rates, tax laws, employment programs, international trade agreements, and corporate strategies.
+
+Economists analyze economic indicators such as gross domestic product and the consumer price index to identify potential trends or make economic forecasts.
+
+According to the Bureau of Labor Statistics (BLS), 38% of all economists in the United States work for a federal or state agency. Economists are also employed as consultants, professors, by corporations, or as part of economic think tanks.
+2
+U.S. Bureau of Labor Statistics. "Economists."
+
+
+What Are Economic Indicators?
+Economic indicators detail a country's economic performance. Published periodically by governmental agencies or private organizations, economic indicators often have a considerable effect on stocks, employment, and international markets. They may predict future economic conditions that will move markets and guide investment decisions.
+
+Gross domestic product (GDP)
+The gross domestic product (GDP) is considered the broadest measure of a country's economic performance. It calculates the total market value of all finished goods and services produced in a country in a given year. In the U.S., the Bureau of Economic Analysis (BEA) also issues a regular report during the latter part of each month.
+3
+ Many investors, analysts, and traders focus on the advance GDP report and the preliminary report, both issued before the final GDP figures because the GDP is considered a lagging indicator, meaning it can confirm a trend but can't predict a trend.
+
+GDPNow
+The GDPNow forecasting model, used by the Federal Reserve, provides a "nowcast" of the official estimate before its release by estimating GDP growth using a methodology similar to the one used by the U.S. Bureau of Economic Analysis.
+4
+
+Retail sales
+Reported by the U.S. Department of Commerce (DOC) during the middle of each month, the retail sales report measures the total receipts, or dollar value, of all merchandise sold in stores.
+5
+ Sampling retailers across the country acts as a proxy of consumer spending levels. Consumer spending represents more than two-thirds of GDP, proving useful to gauge the economy's general direction.
+6
+
+Industrial production
+The industrial production report, released monthly by the Federal Reserve, reports changes in the production of factories, mines, and utilities in the U.S. One measure included in this report is the capacity utilization rate, which estimates the portion of productive capacity that is being used rather than standing idle in the economy. Capacity utilization in the range of 82% to 85% is considered "tight" and can increase the likelihood of price increases or supply shortages in the near term. Levels below 80% are interpreted as showing "slack" in the economy, which may increase the likelihood of a recession.
+7
+
+Employment Data
+The Bureau of Labor Statistics releases employment data in a report called the nonfarm payrolls on the first Friday of each month.
+8
+ Sharp increases in employment indicate prosperous economic growth and potential contractions may be imminent if significant decreases occur. These are generalizations, however, and it is important to consider the current position of the economy.
+
+Consumer Price Index (CPI)
+The Consumer Price Index (CPI), also issued by the BLS, measures the level of retail price changes, and the costs that consumers pay, and is the benchmark for measuring inflation. Using a basket that is representative of the goods and services in the economy, the CPI compares the price changes month after month and year after year.
+9
+ This report is an important economic indicator and its release can increase volatility in equity, fixed income, and forex markets. Greater-than-expected price increases are considered a sign of inflation, which will likely cause the underlying currency to depreciate.
+
+Economic Systems
+Five economic systems illustrate historical practices used to allocate resources to meet the needs of the individual and society.
+
+Primitivism
+In primitive agrarian societies, individuals produced necessities from building dwellings, growing crops, and hunting game at the household or tribal level.
+
+Feudalism
+A political and economic system of Europe from the 9th to 15th century, feudalism was defined by the lords who held land and leased it to peasants for production, who received a promise of safety and security from the lord.
+Capitalism
+With the advent of the industrial revolution, capitalism emerged and is defined as a system of production where business owners organize resources including tools, workers, and raw materials to produce goods for market consumption and earn profits. Supply and demand set prices in markets in a way that can serve the best interests of society. 
+
+Socialism
+Socialism is a form of a cooperative production economy. Economic socialism is a system of production in which there is limited or hybrid private ownership of the means of production. Prices, profits, and losses are not the determining factors used to establish who engages in the production, what to produce and how to produce it.
+Communism
+Communism holds that all economic activity is centralized through the coordination of state-sponsored central planners with common ownership of production and distribution.
+
+Schools of Economic Theory
+Many economic theories have evolved as societies and markets have grown and changed. However, three disciplines of economics, neoclassical, Keynesian, and Marxian, have influenced modern society.
+
+The principles of neoclassical economics are often used as a framework to illustrate the virtues of capitalism, including the tendency of market prices to reach equilibrium as the volume of supply and demand changes. The optimal valuation of resources emerges from the forces of individual desire and scarcity.
+
+John Maynard Keynes developed the theory of Keynesian economics during the Great Depression. Arguing against neoclassical theory, Keynes showed that restrained markets and government intervention in markets create a stable and equitable economic system. He advocated for a monetary policy designed to boost demand and investor confidence during economic downturns.
+
+Marxian economics is defined in Karl Marx's work Das Kapital. Marxian economics is a rejection of the classical view of economics, arguing against the idea that the free market, an economic system determined by supply and demand with little or no government control, benefits society. He espoused that capitalism only benefits a select few and that the ruling class becomes richer by extracting value out of cheap labor provided by the working class.
+10
+
+What Is a Command Economy?
+A command economy is an economy in which production, investment, prices, and incomes are determined centrally by a government. A communist society has a command economy.
+
+What Is Behavioral Economics?
+Behavioral economics combines psychology, judgment, decision-making, and economics to understand human behavior. Branches of economic thought continue to grow and change. One such example is the progressive branch of bioeconomics that models economic decisions in terms of managing resources.
+
+Who Has Influenced the Study of Economics in the 21st Century?
+Since 2000, several economists have won the Nobel Prize in economics, including David Card for his contributions to labor economics, Angus Deaton for his study of consumption, poverty, and welfare, and Paul Krugman for his analysis of trade patterns.
+
+The Bottom Line
+Economics is a branch of the social sciences focused on the production, distribution, and consumption of goods and services. Microeconomics is a type of economics that is concerned with the behavior of individual people and businesses, while macroeconomics considers broader trends affecting nations and larger economies. In the U.S., a number of key economic indicators, including GDP and CPI, are important tools for economists to measure trends and make forecasts.
+
+ARTICLE SOURCES
+Part of the Series
+Guide to Economics
+Introduction to Economics
+  Economics Defined with Types, Indicators, and Systems
+CURRENT ARTICLE
+  Economy Definition
+  History of Economics
+  Is Economics a Science?
+  Understanding Finance vs. Economics
+  Macroeconomics
+  Microeconomics
+Economic Concepts and Theories
+Economic Indicators
+Real World Economies
+Related Terms
+Economy: What It Is, Types of Economies, Economic Indicators
+An economy is a system of production and consumption activities that determine how resources are allocated among all of its participants. Learn how it works. more
+Microeconomics Definition, Uses, and Concepts
+Microeconomics is a branch of economics that analyzes the market behavior of individuals and businesses to understand their decision-making processes. more
+Political Economy Definition, History, and Applications
+Political economy is a branch of the social sciences that focuses on the interrelationships among individuals, governments, and public policy. more
+Social Science: What It Is and the 5 Major Branches
+Social science is the study of individuals' behavior in society. Its academic disciplines are anthropology, economics, political science, psychology, and sociology. more
+What Is the GDP Price Deflator and Its Formula?
+The GDP price deflator measures the reduction in the value of all of the goods and services produced in an economy when inflation is taken into account. more
+Business Economics: Definitions and Types
+Business economics applies economic theory and quantitative 

@@ -1,0 +1,18 @@
+Intuition Behind Behavioral Economics
+Bounded Rationality: Traditional economics assumes that individuals have unlimited cognitive resources to make decisions. However, in reality, our ability to process information is limited. This concept, introduced by Herbert Simon, suggests that instead of making perfectly rational choices, people often settle for “satisficing” — finding a solution that is good enough rather than the absolute best. For example, when choosing a restaurant, you might pick the first one that looks decent rather than searching for the best-reviewed option.
+
+Heuristics: To cope with the complexity of decision-making, people often rely on mental shortcuts, known as heuristics. These are rules of thumb that simplify the process but can lead to systematic errors. For instance, if you hear about a plane crash on the news, you might overestimate the dangers of flying because that vivid image sticks in your mind (availability heuristic). This can lead to the irrational decision to drive instead, even though statistically, flying is safer.
+
+Loss Aversion: One of the key insights from behavioral economics is that people tend to feel losses more acutely than they feel equivalent gains. This means that losing $100 feels worse than gaining $100 feels good. This can lead to risk-averse behavior, where individuals avoid taking risks even when the potential benefits outweigh the potential losses. For example, someone might hold onto a failing stock because they want to avoid the pain of realizing a loss, even though selling it might be the more rational choice.
+
+Framing Effects: The way information is presented can significantly influence decisions. For example, if a surgery has a 90% success rate, people are more likely to agree to it than if it is framed as having a 10% failure rate, even though both statements convey the same information. This shows that our choices can be swayed by context and presentation, highlighting the importance of framing in decision-making.
+
+Overconfidence: Many individuals tend to overestimate their knowledge and abilities. This overconfidence can lead to poor decision-making, such as underestimating risks or overestimating the likelihood of success. For instance, a new entrepreneur might believe they will succeed in their business venture without adequately considering the challenges they may face, leading to potential financial losses.
+
+Social Norms and Influences: Our decisions are often influenced by the behavior and expectations of others. People may conform to social norms or be swayed by peer pressure, leading them to make choices that do not align with their true preferences. For instance, someone might choose to buy a luxury car not necessarily because they need it but because they want to be perceived positively by their peers.
+
+Mental Accounting: People tend to categorize their money into different “accounts” in their minds, treating money differently based on its source or intended use. For example, someone might splurge with a tax refund (treating it as “found money”) while being frugal with their regular paycheck. This can lead to inconsistent financial behavior that does not align with overall financial well-being.
+
+Conclusion
+Behavioral economics offers a rich tapestry of insights into how real people make decisions in the face of uncertainty and complexity. By acknowledging the psychological factors at play, we gain a deeper understanding of economic behavior that goes beyond the assumptions of rationality. This perspective can help policymakers design better interventions and help individuals make more informed choices by recognizing the biases and heuristics that often lead us astray.
+
