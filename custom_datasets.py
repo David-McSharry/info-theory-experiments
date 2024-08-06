@@ -214,16 +214,6 @@ class FMRIDatasetConcatV2(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
-# Create an instance of the new dataset
-new_dataset_instance = FMRIDatasetConcatV2()
-
-# Print the size of the tensor in the new dataset
-print(new_dataset_instance.data.size())
-
-
-
-
-
 
 class BigActDataset(Dataset):
     def __init__(self):

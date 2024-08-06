@@ -7,9 +7,10 @@ dataset = MegDataset()
 
 device = 'cuda'
 
-for i in range(1):
-    seed = 1 
+for seed in range(2,10):
+
     torch.manual_seed(seed)
+
     config = {
         "torch_seed": seed,
         "dataset_type": "meg",
@@ -20,7 +21,7 @@ for i in range(1):
         "adjust_Psi": False,
         "clip": 5,
         "feature_size": 3,
-        "epochs": 6,
+        "epochs": 5,
         "start_updating_f_after": 150,
         "update_f_every_N_steps": 5,
         "minimize_neg_terms_until": 0,
@@ -60,7 +61,7 @@ for i in range(1):
 
     project_name = "NEURIPS-MEG-model-A"
 
-    skip_model = train_feature_network(
+    skip_model, name = train_feature_network(
         config=config,
         trainloader=trainloader,
         feature_network_training=skip_model,
@@ -104,12 +105,13 @@ for i in range(1):
             "lr": 1e-4,
             "bias": True,
             "weight_decay": 1e-6,
-        }
+        },
+        "training-name": name
     }
 
-    project_name_test = "NEURIPS-FMRI-model-A-verification"
+    project_name_test = project_name + "-verification"
 
-    skil_model = train_feature_network(
+    skil_model, _ = train_feature_network(
             config=config_test,
             trainloader=trainloader,
             feature_network_training=skip_model,

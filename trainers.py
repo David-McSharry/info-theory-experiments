@@ -297,7 +297,9 @@ def train_feature_network(
     if model_dir_prefix is not None:
         torch.save(feature_network_training.state_dict(), f"models/{model_dir_prefix}-{wandb.run.name}.pth")
 
+    name = wandb.run.name
+
     wandb.finish()
     
-    return feature_network_training
+    return feature_network_training, name
 
