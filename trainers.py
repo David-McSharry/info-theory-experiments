@@ -1,9 +1,6 @@
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import numpy as np
 import tqdm
 import wandb
 from models import DecoupledSmileMIEstimator, DownwardSmileMIEstimator, GeneralSmileMIEstimator
@@ -13,28 +10,35 @@ from einops import reduce
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train_feature_network(
-    config,
-    trainloader,
-    feature_network_training, 
+    config: dict,
+    trainloader: torch.utils.data.DataLoader,
+    feature_network_training: nn.Module, 
     project_name: str,
-    feature_network_A = None,
-    model_dir_prefix = None
+    feature_network_A: nn.Module = None,
+    model_dir_prefix: str = None
 ):
     """
-    - Main function for training and evaluating the feature_network.
-    - In training mode, the function will train either a model_A or a model_B.
-    - In evaluation mode, the feature network will be frozen and adjusted_Psi will be calculated for the network.
-    - If in eval_mode, no feature_network_A should be provided because Psi eval_mode is just for making sure
-        the feature learned is emergent, and the MI with another feature_network is not relevant to this.
+    Main function for training and evaluating the feature_network.
 
-    - train_model_B mode is a subset of train_mode
-    - Psi can optionally be replaced with adjusted_Psi in any mode
+    Args:
+        config (dict): Configuration dictionary containing parameters for training and evaluation.
+        trainloader (torch.utils.data.DataLoader): DataLoader for the training dataset.
+        feature_network_training (nn.Module): The feature network model to be trained or evaluated.
+        project_name (str): Name of the project for logging and tracking.
+        feature_network_A (nn.Module, optional): An optional feature network model A, required if training model B. Default is None.
+        model_dir_prefix (str, optional): An optional prefix for the model directory. Default is None.
+    Notes:
+        In training mode, the function will train either a model_A or a model_B.
+        In evaluation mode, the feature network will be frozen and adjusted_Psi will be calculated for the network.
+        If in eval_mode, no feature_network_A should be provided because Psi eval_mode is just for making sure
+            the feature learned is emergent, and the MI with another feature_network is not relevant to this.
+        train_model_B mode is a subset of train_mode
+        Psi can optionally be replaced with adjusted_Psi in any mode
     """
     
     valid_dataset_types = ['bits', 'ecog', 'resid', 'FMRI', 'meg']
     if config["dataset_type"] not in valid_dataset_types:
         raise ValueError(f"dataset_type must be one of {valid_dataset_types}")
-    # make sure that if config['train_model_B'] is True, then feature_network_A is not None, and if False, then it is None, raise error otherwise
     if config['train_model_B']:
         print("<<Training model B>>")
         if feature_network_A is None:
@@ -154,14 +158,7 @@ def train_feature_network(
                 weight_decay=0
             )
 
-    # TODO: figure out why only f network is being watched, I would like to keep a closer eye on the grad n params.
-    # TODO: Look at how GANs are trained with pytorch and make sure I'm not doing anything unreasonable.
-    # Eg, https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/gan/gan.py 
-    # ^ this does not require retain_graph=True, so maybe this can be optomized somehow
     wandb.watch(feature_network_training, log='all')
-    # wandb.watch(decoupled_MI_estimator, log="all")
-    # for dc in downward_MI_estimators:
-    #     wandb.watch(dc, log='all')
 
     ##
     ## TRAINING LOOP

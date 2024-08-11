@@ -1,4 +1,3 @@
-
 from custom_datasets import BitStringDataset
 from models import SupervenientFeatureNetwork
 import torch
@@ -7,7 +6,8 @@ from trainers import train_feature_network
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-for seed in range(1):
+for seed in range(5):
+    torch.manual_seed(seed)
     bits_config_train = {
             "gamma_parity": 0.99,
             "gamma_extra": 0.99,
@@ -21,10 +21,10 @@ for seed in range(1):
             "adjust_Psi": False,
             "clip": 5,
             "feature_size": 1,
-            "epochs": 3,
-            "start_updating_f_after": 1000,
-            "update_f_every_N_steps": 5,
-            "minimize_neg_terms_until": 0,
+            "epochs": 5,
+            "start_updating_f_after": 300,
+            "update_f_every_N_steps": 1,
+            "minimize_neg_terms_until": 9999999999999999999999999999999999999999999999,
             "downward_critics_config": {
                 "hidden_sizes_v_critic": [512, 512, 512, 256],
                 "hidden_sizes_xi_critic": [512, 512, 512, 256],
@@ -57,7 +57,7 @@ for seed in range(1):
     )
 
     trainloader = torch.utils.data.DataLoader(
-        dataset, batch_size=bits_config_train["batch_size"], shuffle=False
+        dataset, batch_size=bits_config_train["batch_size"], shuffle=True
     )
 
     skip_model = SkipConnectionSupervenientFeatureNetwork(
@@ -67,14 +67,14 @@ for seed in range(1):
         include_bias=bits_config_train['feature_network_config']['bias'],
     ).to(device)
 
-    project_name_train = "NEURIPS-diversity-ablation-training"
+    project_name_train = "NEURIPS-macro-ablation-training"
 
-    skip_model = train_feature_network(
+    skip_model, name = train_feature_network(
             config=bits_config_train,
             trainloader=trainloader,
             feature_network_training=skip_model,
             project_name=project_name_train,
-            model_dir_prefix='emergent_feature_network'
+            model_dir_prefix=project_name_train
     )
 
     bits_config_test = {
@@ -116,12 +116,13 @@ for seed in range(1):
                 "lr": 1e-4,
                 "bias": True,
                 "weight_decay": 0.00001,
-            }
+            },
+        "name": name
     }
 
-    project_name_test = "NEURIPS-diversity-ablation-test"
+    project_name_test = project_name_train + "-validation"
 
-    skil_model = train_feature_network(
+    skil_model, _ = train_feature_network(
             config=bits_config_test,
             trainloader=trainloader,
             feature_network_training=skip_model,
