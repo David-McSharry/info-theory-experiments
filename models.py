@@ -327,3 +327,51 @@ class CLUB(nn.Module):  # CLUB: Mutual Information Contrastive Learning Upper Bo
         return - self.loglikeli(x_samples, y_samples)
 
     
+class GameOfLifeCNN(nn.Module):
+    def __init__(self, output_dim=3):
+        super(GameOfLifeCNN, self).__init__()
+        
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
+        
+        # Batch Normalization layers
+        self.bn1 = nn.BatchNorm2d(32)
+        self.bn2 = nn.BatchNorm2d(64)
+        self.bn3 = nn.BatchNorm2d(128)
+        self.bn4 = nn.BatchNorm2d(256)
+        
+        # Global Average Pooling
+        self.gap = nn.AdaptiveAvgPool2d(1)
+        
+        # Fully connected layer
+        self.fc1 = nn.Linear(256, 128)
+        self.fc2 = nn.Linear(128, output_dim)
+
+    def forward(self, x):
+        # Add channel dimension if not present
+        if x.dim() == 3:
+            x = x.unsqueeze(1)
+        
+        # Convolutional layers with ReLU, Batch Normalization, and max pooling
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.max_pool2d(x, 2)
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.max_pool2d(x, 2)
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = F.max_pool2d(x, 2)
+        x = F.relu(self.bn4(self.conv4(x)))
+        
+        # Global Average Pooling
+        x = self.gap(x)
+        
+        # Flatten
+        x = x.view(x.size(0), -1)
+        
+        # Fully connected layers with ReLU
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        
+        return x

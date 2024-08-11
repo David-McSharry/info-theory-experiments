@@ -1,27 +1,27 @@
-from custom_datasets import MegDataset
+from custom_datasets import GameOfLifeDatasetNoLoop
 import torch
-from trainers import train_feature_network
-from models import SkipConnectionSupervenientFeatureNetwork
+from trainers_GOL_conv_net import train_feature_network
+from models import GameOfLifeCNN
 
-dataset = MegDataset()
+dataset = GameOfLifeDatasetNoLoop()
 
 device = 'cuda'
 
-for seed in range(2,10):
+for seed in range(1,5):
 
     torch.manual_seed(seed)
 
     config = {
         "torch_seed": seed,
-        "dataset_type": "meg",
-        "num_atoms": 116,
+        "dataset_type": "gol",
+        "num_atoms": 225,
         "batch_size": 1000,
         "train_mode": True,
         "train_model_B": False,
         "adjust_Psi": False,
         "clip": 5,
-        "feature_size": 3,
-        "epochs": 6,
+        "feature_size": 1,
+        "epochs": 10,
         "start_updating_f_after": 150,
         "update_f_every_N_steps": 5,
         "minimize_neg_terms_until": 0,
@@ -52,14 +52,11 @@ for seed in range(2,10):
 
     trainloader = torch.utils.data.DataLoader(dataset, batch_size=config['batch_size'], shuffle=True)
 
-    skip_model = SkipConnectionSupervenientFeatureNetwork(
-        num_atoms=config['num_atoms'],
-        feature_size=config['feature_size'],
-        hidden_sizes=config['feature_network_config']['hidden_sizes'],
-        include_bias=config['feature_network_config']['bias'],
+    skip_model = GameOfLifeCNN(
+        output_dim=config['feature_size'],
     ).to(device)
 
-    project_name = "NEURIPS-MEG-model-A"
+    project_name = "NEURIPS-GOL-model-A-rand-shape-init"
 
     skip_model, name = train_feature_network(
         config=config,
@@ -71,14 +68,14 @@ for seed in range(2,10):
 
     config_test = {    
         "torch_seed": seed,
-        "dataset_type": "meg",
-        "num_atoms": 116,
+        "dataset_type": "gol",
+        "num_atoms": 225,
         "batch_size": 1000,
         "train_mode": False,
         "train_model_B": False,
         "adjust_Psi": True,
         "clip": 5,
-        "feature_size": 3,
+        "feature_size": 1,
         "epochs": 3,
         "start_updating_f_after": 300,
         "update_f_every_N_steps": 5,

@@ -31,7 +31,7 @@ def train_feature_network(
     - Psi can optionally be replaced with adjusted_Psi in any mode
     """
     
-    valid_dataset_types = ['bits', 'ecog', 'resid', 'FMRI', 'meg']
+    valid_dataset_types = ['bits', 'ecog', 'resid', 'FMRI', 'meg', 'gol']
     if config["dataset_type"] not in valid_dataset_types:
         raise ValueError(f"dataset_type must be one of {valid_dataset_types}")
     # make sure that if config['train_model_B'] is True, then feature_network_A is not None, and if False, then it is None, raise error otherwise
@@ -189,9 +189,10 @@ def train_feature_network(
 
 
             # update each downward critic 
+            x0_flat = x0.view(x0.size(0), -1)  # Flatten x0 to (batch_size, 10*10)
             for i in range(config['num_atoms']):
                 downward_optims[i].zero_grad()
-                channel_i = x0[:, i].unsqueeze(1).detach()
+                channel_i = x0_flat[:, i].unsqueeze(1).detach()
                 downward_MI_i = downward_MI_estimators[i](v1_B, channel_i)
                 downward_loss = - downward_MI_i
                 downward_loss.backward(retain_graph=True)
@@ -219,7 +220,7 @@ def train_feature_network(
             v1_B = feature_network_training(x1)
 
             for i in range(config['num_atoms']): # finds sum of downward terms
-                channel_i = x0[:, i].unsqueeze(1)
+                channel_i = x0_flat[:, i].unsqueeze(1)
                 channel_i_MI = downward_MI_estimators[i](v1_B, channel_i)
                 downward_MIs_post_update.append(channel_i_MI)
 

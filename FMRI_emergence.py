@@ -7,9 +7,8 @@ dataset = FMRIDatasetConcat()
 
 device = 'cuda'
 
-for i in range(1):
+for seed in range(10):
 
-    seed = 1 
     torch.manual_seed(seed)
 
     config = {
@@ -51,7 +50,7 @@ for i in range(1):
         }
     }
 
-    trainloader = torch.utils.data.DataLoader(dataset, batch_size=config['batch_size'], shuffle=False)
+    trainloader = torch.utils.data.DataLoader(dataset, batch_size=config['batch_size'], shuffle=True)
 
     skip_model = SkipConnectionSupervenientFeatureNetwork(
         num_atoms=config['num_atoms'],
@@ -62,12 +61,12 @@ for i in range(1):
 
     project_name = "NEURIPS-FMRI-model-A"
 
-    skip_model = train_feature_network(
+    skip_model, name = train_feature_network(
         config=config,
         trainloader=trainloader,
         feature_network_training=skip_model,
         project_name=project_name,
-        model_dir_prefix='NEURIPS-FMRI-model-A'
+        model_dir_prefix=project_name
     )
 
     config_test = {    
@@ -109,9 +108,9 @@ for i in range(1):
         }
     }
 
-    project_name_test = "NEURIPS-FMRI-model-A-verification"
+    project_name_test = project_name+ "-verification"
 
-    skil_model = train_feature_network(
+    skil_model, _ = train_feature_network(
             config=config_test,
             trainloader=trainloader,
             feature_network_training=skip_model,

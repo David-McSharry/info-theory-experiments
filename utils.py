@@ -1,3 +1,6 @@
+import torch
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -76,7 +79,31 @@ def prepare_batch(X):
     # stack them as pairs with dimension (999, 2, 10)
     pairs = torch.stack((input_data, target_data), dim=1)
 
-    assert pairs[0,0,0] == input_data[0,0]
+    # assert pairs[0,0,0] == input_data[0,0]
+
+    return pairs
+
+
+
+def prepare_batch_and_randomize(X):
+    # take all samples except the last one as inputs
+    input_data = X[:-1]
+
+    # take all samples except the first one as targets
+    target_data = X[1:]
+
+    # Shuffle target and input data with different permutations
+    input_indices = torch.randperm(input_data.size(0))
+    target_indices = torch.randperm(target_data.size(0))
+    input_data = input_data[input_indices]
+    target_data = target_data[target_indices]
+
+
+
+    # stack them as pairs with dimension (999, 2, 10)
+    pairs = torch.stack((input_data, target_data), dim=1)
+
+    # assert pairs[0,0,0] == input_data[0,0]
 
     return pairs
 
@@ -134,3 +161,110 @@ def prepare_batch(X):
 
 #     return None
 
+
+
+
+# def create_glider(grid, x, y):
+#     glider = torch.tensor([[0, 1, 0],
+#                            [0, 0, 1],
+#                            [1, 1, 1]], dtype=torch.float32)
+#     grid[x:x+3, y:y+3] = glider
+
+# def update_grid(grid):
+#     N = grid.shape[0]
+#     total = (
+#         grid.roll(1, 0) + grid.roll(-1, 0) +
+#         grid.roll(1, 1) + grid.roll(-1, 1) +
+#         grid.roll(1, 0).roll(1, 1) + grid.roll(1, 0).roll(-1, 1) +
+#         grid.roll(-1, 0).roll(1, 1) + grid.roll(-1, 0).roll(-1, 1)
+#     )
+#     return ((grid == 1) & ((total == 2) | (total == 3))) | ((grid == 0) & (total == 3))
+
+# def run_game_of_life(N, steps, seed):
+#     torch.manual_seed(seed)
+    
+#     grid = torch.zeros((N, N), dtype=torch.float32)
+#     x, y = torch.randint(0, N-3, (2,))
+#     create_glider(grid, x, y)
+    
+#     grids = [grid.clone()]
+#     for _ in range(steps - 1):
+#         grid = update_grid(grid).float()
+#         grids.append(grid.clone())
+    
+#     return torch.stack(grids)
+
+# def animate_game_of_life(grids):
+#     fig, ax = plt.subplots()
+#     img = ax.imshow(grids[0].cpu().numpy(), interpolation='nearest', cmap='binary')
+    
+#     def update(frame):
+#         img.set_array(grids[frame].cpu().numpy())
+#         return [img]
+    
+#     ani = FuncAnimation(fig, update, frames=len(grids), interval=200, blit=True)
+#     plt.close(fig)  # Prevent the static plot from displaying
+#     return ani
+
+
+
+
+
+
+################ no loop
+
+
+
+def create_glider_no_loop(grid, x, y):
+    gliders = [
+        torch.tensor([[0, 1, 0], [0, 0, 1], [1, 1, 1]], dtype=torch.float32),
+        torch.tensor([[1, 0, 1], [0, 1, 1], [0, 1, 0]], dtype=torch.float32),
+        torch.tensor([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=torch.float32),
+        torch.tensor([[1, 0, 0], [0, 1, 1], [1, 1, 0]], dtype=torch.float32)
+    ]
+    glider = gliders[torch.randint(0, len(gliders), (1,)).item()]
+    grid[x:x+3, y:y+3] = glider
+
+def update_grid_no_loop(grid):
+    N = grid.shape[0]
+    padded_grid = torch.zeros((N+2, N+2), dtype=torch.float32)
+    padded_grid[1:-1, 1:-1] = grid
+    
+    total = (
+        padded_grid[:-2, 1:-1] + padded_grid[2:, 1:-1] +
+        padded_grid[1:-1, :-2] + padded_grid[1:-1, 2:] +
+        padded_grid[:-2, :-2] + padded_grid[:-2, 2:] +
+        padded_grid[2:, :-2] + padded_grid[2:, 2:]
+    )
+    
+    new_grid = ((grid == 1) & ((total == 2) | (total == 3))) | ((grid == 0) & (total == 3))
+    return new_grid.float()
+
+def run_game_of_life_no_loop(N, max_steps, seed):
+    torch.manual_seed(seed)
+    
+    grid = torch.zeros((N, N), dtype=torch.float32)
+    x, y = torch.randint(0, N-3, (2,))
+    create_glider_no_loop(grid, x, y)
+    
+    grids = [grid.clone()]
+    for _ in range(max_steps - 1):
+        new_grid = update_grid_no_loop(grid)
+        if torch.all(new_grid == grid) or torch.sum(new_grid[0, :] + new_grid[-1, :] + new_grid[:, 0] + new_grid[:, -1]) > 0:
+            break
+        grid = new_grid
+        grids.append(grid.clone())
+    
+    return torch.stack(grids)
+
+def animate_game_of_life_no_loop(grids):
+    fig, ax = plt.subplots()
+    img = ax.imshow(grids[0].cpu().numpy(), interpolation='nearest', cmap='binary')
+    
+    def update(frame):
+        img.set_array(grids[frame].cpu().numpy())
+        return [img]
+    
+    ani = FuncAnimation(fig, update, frames=len(grids), interval=200, blit=True)
+    plt.close(fig)  # Prevent the static plot from displaying
+    return ani
