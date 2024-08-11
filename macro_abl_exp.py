@@ -7,7 +7,7 @@ from trainers import train_feature_network
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-for seed in range(2,3):
+for seed in range(1):
     bits_config_train = {
             "gamma_parity": 0.99,
             "gamma_extra": 0.99,
@@ -21,7 +21,7 @@ for seed in range(2,3):
             "adjust_Psi": False,
             "clip": 5,
             "feature_size": 1,
-            "epochs": 7,
+            "epochs": 3,
             "start_updating_f_after": 1000,
             "update_f_every_N_steps": 5,
             "minimize_neg_terms_until": 0,

@@ -21,7 +21,7 @@ for seed in range(2,10):
         "adjust_Psi": False,
         "clip": 5,
         "feature_size": 3,
-        "epochs": 6,
+        "epochs": 5,
         "start_updating_f_after": 150,
         "update_f_every_N_steps": 5,
         "minimize_neg_terms_until": 0,
