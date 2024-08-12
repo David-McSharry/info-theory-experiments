@@ -164,54 +164,6 @@ def prepare_batch_and_randomize(X):
 
 
 
-# def create_glider(grid, x, y):
-#     glider = torch.tensor([[0, 1, 0],
-#                            [0, 0, 1],
-#                            [1, 1, 1]], dtype=torch.float32)
-#     grid[x:x+3, y:y+3] = glider
-
-# def update_grid(grid):
-#     N = grid.shape[0]
-#     total = (
-#         grid.roll(1, 0) + grid.roll(-1, 0) +
-#         grid.roll(1, 1) + grid.roll(-1, 1) +
-#         grid.roll(1, 0).roll(1, 1) + grid.roll(1, 0).roll(-1, 1) +
-#         grid.roll(-1, 0).roll(1, 1) + grid.roll(-1, 0).roll(-1, 1)
-#     )
-#     return ((grid == 1) & ((total == 2) | (total == 3))) | ((grid == 0) & (total == 3))
-
-# def run_game_of_life(N, steps, seed):
-#     torch.manual_seed(seed)
-    
-#     grid = torch.zeros((N, N), dtype=torch.float32)
-#     x, y = torch.randint(0, N-3, (2,))
-#     create_glider(grid, x, y)
-    
-#     grids = [grid.clone()]
-#     for _ in range(steps - 1):
-#         grid = update_grid(grid).float()
-#         grids.append(grid.clone())
-    
-#     return torch.stack(grids)
-
-# def animate_game_of_life(grids):
-#     fig, ax = plt.subplots()
-#     img = ax.imshow(grids[0].cpu().numpy(), interpolation='nearest', cmap='binary')
-    
-#     def update(frame):
-#         img.set_array(grids[frame].cpu().numpy())
-#         return [img]
-    
-#     ani = FuncAnimation(fig, update, frames=len(grids), interval=200, blit=True)
-#     plt.close(fig)  # Prevent the static plot from displaying
-#     return ani
-
-
-
-
-
-
-################ no loop
 
 
 

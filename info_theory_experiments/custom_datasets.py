@@ -291,55 +291,6 @@ class MegDataset(Dataset):
         return self.data[idx]
 
 
-
-# class GameOfLifeDataset(Dataset):
-#     def __init__(self):
-#         self.data = self.generate_data()
-
-#     def generate_data(self):
-#         # Generate a dataset of grids by running the simulation 150 times for 100 time steps each
-#         num_simulations = 5000
-#         time_steps = 100
-#         grid_size = 10
-
-#         # Initialize an empty list to store the results
-#         dataset = []
-
-#         # Run the simulation num_simulations times
-#         for seed in range(num_simulations):
-#             grids = run_game_of_life(grid_size, time_steps, seed)
-#             dataset.append(grids)
-#         # Stack the results to form a single tensor
-#         dataset = torch.stack(dataset)
-
-#         prepared_array = []
-#         for sim_id in range(num_simulations):
-#             # Normalize the images
-#             grids = dataset[sim_id]
-#             grids = (grids - grids.mean(dim=(1, 2), keepdim=True)) / grids.std(dim=(1, 2), keepdim=True)
-#             prepared_array.append(prepare_batch(grids))
-
-#         print(f"Length of prepared array: {len(prepared_array)}")
-#         print(f"size of single element in prepared array: {prepared_array[0].size()}")
-
-#         dataset = torch.cat(prepared_array, dim=0)
-
-#         print(f"size of dataset: {dataset.size()}")
-
-#         image = dataset[0]
-#         norm = torch.mean(image)
-#         std_dev = torch.std(image)
-#         print(f"Image {0}: mean = {norm:.2f}, Std Dev = {std_dev}")
-
-#         return dataset
-
-#     def __len__(self):
-#         return len(self.data)
-
-#     def __getitem__(self, idx):
-#         return self.data[idx]
-    
-
 class GameOfLifeDatasetNoLoop(Dataset):
     def __init__(self):
         self.data = self.generate_data()
