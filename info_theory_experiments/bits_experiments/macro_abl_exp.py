@@ -1,8 +1,7 @@
-from custom_datasets import BitStringDataset
-from models import SupervenientFeatureNetwork
+from info_theory_experiments.custom_datasets import BitStringDataset
 import torch
-from models import SkipConnectionSupervenientFeatureNetwork
-from trainers import train_feature_network
+from info_theory_experiments.models import SkipConnectionSupervenientFeatureNetwork
+from info_theory_experiments.trainers import train_feature_network
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -23,8 +22,8 @@ for seed in range(5):
             "feature_size": 1,
             "epochs": 5,
             "start_updating_f_after": 300,
-            "update_f_every_N_steps": 1,
-            "minimize_neg_terms_until": 9999999999999999999999999999999999999999999999,
+            "update_f_every_N_steps": 5,
+            "minimize_neg_terms_until": 0,
             "downward_critics_config": {
                 "hidden_sizes_v_critic": [512, 512, 512, 256],
                 "hidden_sizes_xi_critic": [512, 512, 512, 256],

@@ -46,25 +46,6 @@ def estimate_MI_smile(scores):
     return (1/torch.log(torch.tensor(2.0))) * first_term - second_term
 
 
-# def fft_check(data, fs):
-#     # Perform FFT on your data and plot results to view frequencies present in data
-#     N = data.shape[0]
-#     yf = fft(data)
-#     xf = fftfreq(N, 1/fs)
-
-#     plt.figure(figsize=(10,6))
-#     plt.plot(xf, np.abs(yf))
-
-#     plt.title('FFT of data')
-#     plt.xlabel('Frequency (Hz)')
-#     plt.ylabel('Magnitude')
-#     plt.grid()
-#     plt.xscale('log')
-#     plt.show()
-
-#     return None
-
-
 # https://neurotycho.brain.riken.jp/download/2012/20100802S1_Epidural-ECoG+Food-Tracking_B_Kentaro+Shimoda_mat_ECoG64-Motion6.zip
 
 
@@ -86,6 +67,10 @@ def prepare_batch(X):
 
 
 def prepare_batch_and_randomize(X):
+    """
+    This function is for randomizing the input and targert time series steps 
+    for control analysis
+    """
     # take all samples except the last one as inputs
     input_data = X[:-1]
 
@@ -106,62 +91,6 @@ def prepare_batch_and_randomize(X):
     # assert pairs[0,0,0] == input_data[0,0]
 
     return pairs
-
-
-
-
-
-
-
-# def prepare_ecog_dataset():
-
-
-#     def _butter_highpass(cutoff, fs, order=5):
-#         nyq = 0.5 * fs
-#         normal_cutoff = cutoff / nyq
-#         b, a = butter(order, normal_cutoff, btype='high', analog=False)
-#         return b, a
-
-
-#     def _butter_highpass_filter(data, cutoff, fs, order=5):
-#         b, a = _butter_highpass(cutoff, fs, order=order)
-#         y = filtfilt(b, a, data)
-#         return y
-
-
-#     num_channels = 64
-#     data_list = []
-#     for i in range(1, num_channels + 1):
-
-#         channel_data = scipy.io.loadmat(f'/Users/davidmcsharry/dev/imperial/info-theory-experiments/ecog/ECoG_ch{i}.mat')
-#         data = channel_data[f'ECoGData_ch{i}'].squeeze()
-
-#         # high pass filter at 1 Hz
-#         fs = 1000  # original sampling rate
-#         cutoff = 1  # cutoff frequency for high pass filter
-#         data = _butter_highpass_filter(data, cutoff, fs)
-
-#         # downsample to 300 Hz
-#         downsample_rate = int(fs / 300)  # calculate downsample rate
-#         data = decimate(data, downsample_rate)
-
-#         # standardise across features. Comes last as the data being fed into our ML model should be standardised
-#         data = (data - np.mean(data)) / np.std(data)
-
-#         data_list.append(data) 
-
-#     # Stack all channel data into a single numpy array
-#     all_data = np.stack(data_list, axis=0)
-
-#     dataset_tensor = torch.tensor(all_data).T
-
-#     dataset_pairs = prepare_batch(dataset_tensor)
-#     # save as dataset
-#     torch.save(dataset_pairs, '/Users/davidmcsharry/dev/imperial/info-theory-experiments/ecog/ecog_data_pairs.pth')
-
-#     return None
-
-
 
 
 

@@ -6,8 +6,8 @@ import requests
 import zipfile
 import io
 from scipy.signal import butter, filtfilt
-from utils import prepare_batch, prepare_batch_and_randomize
-from utils import run_game_of_life_no_loop
+from info_theory_experiments.utils import prepare_batch, prepare_batch_and_randomize, run_game_of_life_no_loop
+
 
 class BitStringDataset(Dataset):
     def __init__(self, gamma_parity, gamma_extra, length):
@@ -290,39 +290,53 @@ class MegDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
-
 class GameOfLifeDatasetNoLoop(Dataset):
-    def __init__(self):
+    def __init__(
+        self,
+        prepare: bool = True,
+        normalize: bool = True,
+        num_simulations: int = 5000,
+        time_steps: int = 100,
+        grid_size: int = 15
+    ):     
+        self.prepare = prepare
+        self.normalize = normalize
+        self.num_simulations = num_simulations
+        self.time_steps = time_steps
+        self.grid_size = grid_size
         self.data = self.generate_data()
 
-    def generate_data(self):
-        # Generate a dataset of grids by running the simulation 150 times for 100 time steps each
-        num_simulations = 15000
-        time_steps = 100
-        grid_size = 15
+    def generate_data(
+        self
+    ) -> torch.Tensor:
+        # Generate a dataset of grids by running the simulation 15000 times for 100 time steps each
+        # The shape of the returned tensor will be either:
+        # torch.Tensor[N-1, 2, M, M] if self.prepare is True
+        # torch.Tensor[N, M, M] if self.prepare is False
+        # where N = time_steps, M = grid_size
 
         # Initialize an empty list to store the results
+
         dataset = []
 
         # Run the simulation num_simulations times
-        for seed in range(num_simulations):
-            grids = run_game_of_life_no_loop(grid_size, time_steps, seed)
+        for seed in range(self.num_simulations):
+            grids = run_game_of_life_no_loop(self.grid_size, self.time_steps, seed)
             dataset.append(grids)
         # Stack the results to form a single tensor
 
         prepared_array = []
-        for sim_id in range(num_simulations):
+        for sim_id in range(self.num_simulations):
             # Normalize the images
             grids = dataset[sim_id]
-            grids = (grids - grids.mean(dim=(1, 2), keepdim=True)) / grids.std(dim=(1, 2), keepdim=True)
-            prepared_array.append(prepare_batch(grids))
-
-        print(f"Length of prepared array: {len(prepared_array)}")
-        print(f"size of single element in prepared array: {prepared_array[0].size()}")
+            if self.normalize:
+                grids = (grids - grids.mean(dim=(1, 2), keepdim=True)) / grids.std(dim=(1, 2), keepdim=True)
+            if self.prepare:
+                prepared_array.append(prepare_batch(grids))
+            else:
+                prepared_array.append(grids)
 
         dataset = torch.cat(prepared_array, dim=0)
-
-        print(f"size of dataset: {dataset.size()}")
 
         image = dataset[0]
         norm = torch.mean(image)
@@ -336,85 +350,40 @@ class GameOfLifeDatasetNoLoop(Dataset):
 
     def __getitem__(self, idx):
         return self.data[idx]
+    
 
 
 
 
-class GameOfLifeDatasetNoLoopControl(Dataset):
-    def __init__(self):
-        self.data = self.generate_data()
 
-    def generate_data(self):
-        # Generate a dataset of grids by running the simulation 150 times for 100 time steps each
-        num_simulations = 15000
-        time_steps = 100
-        grid_size = 10
+# NOTE: regualr noloop class now does this
+# class GameOfLifeDatasetNoLoopNoPrepare(Dataset):
+#     def __init__(self):
+#         self.data = self.generate_data()
 
-        # Initialize an empty list to store the results
-        dataset = []
+#     def generate_data(self):
+#         # Generate a dataset of grids by running the simulation 150 times for 100 time steps each
+#         num_simulations = 10000
+#         time_steps = 100
+#         grid_size = 10
 
-        # Run the simulation num_simulations times
-        for seed in range(num_simulations):
-            grids = run_game_of_life_no_loop(grid_size, time_steps, seed)
-            dataset.append(grids)
-        # Stack the results to form a single tensor
+#         # Initialize an empty list to store the results
+#         dataset = []
 
-        prepared_array = []
-        for sim_id in range(num_simulations):
-            # Normalize the images
-            grids = dataset[sim_id]
-            grids = (grids - grids.mean(dim=(1, 2), keepdim=True)) / grids.std(dim=(1, 2), keepdim=True)
-            prepared_array.append(prepare_batch_and_randomize(grids))
+#         # Run the simulation num_simulations times
+#         for seed in range(num_simulations):
+#             grids = run_game_of_life_no_loop(grid_size, time_steps, seed)
+#             dataset.append(grids)
+#         # Stack the results to form a single tensor
 
-        print(f"Length of prepared array: {len(prepared_array)}")
-        print(f"size of single element in prepared array: {prepared_array[0].size()}")
-
-        dataset = torch.cat(prepared_array, dim=0)
-
-        print(f"size of dataset: {dataset.size()}")
-
-        image = dataset[0]
-        norm = torch.mean(image)
-        std_dev = torch.std(image)
-        print(f"Image {0}: mean = {norm:.2f}, Std Dev = {std_dev}")
-
-        return dataset
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        return self.data[idx]
-
-
-
-class GameOfLifeDatasetNoLoopNoPrepare(Dataset):
-    def __init__(self):
-        self.data = self.generate_data()
-
-    def generate_data(self):
-        # Generate a dataset of grids by running the simulation 150 times for 100 time steps each
-        num_simulations = 10000
-        time_steps = 100
-        grid_size = 10
-
-        # Initialize an empty list to store the results
-        dataset = []
-
-        # Run the simulation num_simulations times
-        for seed in range(num_simulations):
-            grids = run_game_of_life_no_loop(grid_size, time_steps, seed)
-            dataset.append(grids)
-        # Stack the results to form a single tensor
-
-        return torch.cat(dataset, dim=0)
+#         return torch.cat(dataset, dim=0)
         
 
-    def __len__(self):
-        return len(self.data)
+#     def __len__(self):
+#         return len(self.data)
 
-    def __getitem__(self, idx):
-        return self.data[idx]
+#     def __getitem__(self, idx):
+#         return self.data[idx]
 
 
 

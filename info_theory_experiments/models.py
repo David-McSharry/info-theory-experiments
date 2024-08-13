@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from smile_estimator import estimate_mutual_information
+from info_theory_experiments.smile_estimator import estimate_mutual_information
 from torch.nn.utils.spectral_norm import spectral_norm
 import torch.nn.functional as F
 
@@ -375,3 +375,62 @@ class GameOfLifeCNN(nn.Module):
         x = self.fc2(x)
         
         return x
+    
+
+
+class GameOfLifeEncoder(nn.Module):
+    def __init__(self, feature_size=3):
+        super(GameOfLifeEncoder, self).__init__()
+        
+        # Encoder (CNN)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.AdaptiveAvgPool2d(1)  # Global Average Pooling
+        )
+        
+        # Fully connected layer to produce feature_size-dim representation
+        self.fc_encode = nn.Linear(64, feature_size)
+
+    def forward(self, x):
+        # Add channel dimension if not present
+        if x.dim() == 3:
+            x = x.unsqueeze(1)
+        
+        # Encode
+        encoded = self.encoder(x)
+        encoded = encoded.view(encoded.size(0), -1)
+        encoded = self.fc_encode(encoded)
+        
+        return encoded
+
+class GameOfLifePredictor(nn.Module):
+    def __init__(self, grid_size, feature_size=3):
+        super(GameOfLifePredictor, self).__init__()
+        self.grid_size = grid_size
+        
+        # Decoder (Transposed CNN)
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(feature_size, 64, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(16, 1, kernel_size=3, padding=1),
+            nn.Sigmoid()  # Output in [0, 1] range
+        )
+
+    def forward(self, encoded):
+        # Decode
+        decoded = encoded.view(encoded.size(0), -1, 1, 1)
+        output = self.decoder(decoded)
+        
+        # Ensure output matches input size
+        output = F.interpolate(output, size=(self.grid_size, self.grid_size), mode='bilinear', align_corners=False)
+        
+        return output.squeeze(1)
