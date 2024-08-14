@@ -400,7 +400,7 @@ class GameOfLifeEncoder(nn.Module):
         # Add channel dimension if not present
         if x.dim() == 3:
             x = x.unsqueeze(1)
-        
+
         # Encode
         encoded = self.encoder(x)
         encoded = encoded.view(encoded.size(0), -1)
