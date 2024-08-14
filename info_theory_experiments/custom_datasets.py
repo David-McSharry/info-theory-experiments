@@ -268,7 +268,7 @@ class BigActDataset(Dataset):
 class MegDataset(Dataset):
     def __init__(self):
         # Load the .mat file
-        data_pla = scipy.io.loadmat('070814_2_PLA (1).mat')
+        data_pla = scipy.io.loadmat('070814_2_PLA (4).mat')
         
         # Concatenate the data along the second dimension
         concatenated_data = np.concatenate([data_pla['timeseries'][0][i].flatten() for i in range(data_pla['timeseries'][0].shape[0])], axis=0)

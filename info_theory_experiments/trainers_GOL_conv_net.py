@@ -176,7 +176,6 @@ def train_feature_network(
             x1 = batch[:, 1].to(device).float().unsqueeze(1)
             v0_B = feature_network_training(x0).detach()
             v1_B = feature_network_training(x1).detach()
-            print(v0_B.shape)
             if config['train_model_B']:
                 v0_A = feature_network_A(x0).detach()
 
