@@ -166,8 +166,41 @@ class ResidualStreamDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
+# class ResidualStreamDatasetAlongResidStremDirection(Dataset):
+#     def __init__(self):
+#         pairs_of_adjacent_resid_streams = []
+#         for i in range(1, 15):
+#             data = torch.load(f"activations2/downstream/econ_resid_actications_text{i}.pt")
+#             for j in range(data.size(1)):
+#                 single_resid_stream = data[:, j]
+#                 single_resid_stream = prepare_batch(single_resid_stream)
+#                 pairs_of_adjacent_resid_streams.append(single_resid_stream)
+#         self.data = torch.cat(pairs_of_adjacent_resid_streams, dim=0)
 
-            
+#     def __len__(self):
+#         return self.data.size(0)
+
+#     def __getitem__(self, idx):
+#         return self.data[idx]
+
+class ResidualStreamDatasetAlongResidStremDirection_1_to_2(Dataset):
+    def __init__(self):
+        pairs_of_adjacent_resid_streams = []
+        for i in range(1, 15):
+            data = torch.load(f"/vol/bitbucket/dm2223/info-theory-experiments/activations2/downstrea_between_1_2/econ_resid_actications_text{i}.pt")
+            for j in range(data.size(1)):
+                single_resid_stream = data[:, j]
+                single_resid_stream = prepare_batch(single_resid_stream)
+                pairs_of_adjacent_resid_streams.append(single_resid_stream)
+        data_unnormalized = torch.cat(pairs_of_adjacent_resid_streams, dim=0)
+        self.data = (data_unnormalized - data_unnormalized.mean(dim=0)) / data_unnormalized.std(dim=0)
+
+    def __len__(self):
+        return self.data.size(0)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
 
 class FMRIDatasetConcat(Dataset):
     """

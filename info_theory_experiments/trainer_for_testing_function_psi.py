@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 import tqdm
 import wandb
-from models import DecoupledSmileMIEstimator, DownwardSmileMIEstimator, GeneralSmileMIEstimator
+from info_theory_experiments.models import DecoupledSmileMIEstimator, DownwardSmileMIEstimator, GeneralSmileMIEstimator
 from einops import reduce
 
 
